@@ -20,6 +20,7 @@ import { PlusCircle, BookOpen, BookCopy, Loader2 } from "lucide-react";
 import { type TimetableEntry } from "@/lib/types";
 import { TimetableRow } from "./timetable-row";
 import { EditClassDialog } from "./edit-class-dialog";
+import { DeleteClassAlert } from "./delete-class-alert";
 import { Skeleton } from "./ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -55,6 +56,7 @@ type TimetableProps = {
 export function Timetable({ data, loading, isCR }: TimetableProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<TimetableEntry | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isSeeding, setIsSeeding] = useState(false);
   const [isTemplateAlertOpen, setTemplateAlertOpen] = useState(false);
   const { toast } = useToast();
@@ -73,6 +75,10 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
     setEditingClass(entry);
     setIsDialogOpen(true);
   };
+  
+  const handleDelete = (entryId: string) => {
+    setDeleteTargetId(entryId);
+  };
 
   const handleLoadTemplate = async () => {
     setIsSeeding(true);
@@ -80,13 +86,11 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
       const batch = writeBatch(db);
       const timetableRef = collection(db, "timetable");
       
-      // Query for all documents and delete them
       const snapshot = await getDocs(timetableRef);
       snapshot.docs.forEach((doc) => {
         batch.delete(doc.ref);
       });
 
-      // Add template entries
       scheduleTemplate.forEach((templateEntry) => {
         const newDocRef = doc(collection(db, "timetable"));
         const data = {
@@ -119,7 +123,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
       });
     } finally {
       setIsSeeding(false);
-      setTemplateAlertOpen(false); // Close the dialog
+      setTemplateAlertOpen(false);
     }
   };
   
@@ -194,16 +198,26 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
               entry={entry}
               isCR={isCR}
               onEdit={handleEdit}
+              onDelete={handleDelete}
               isMobile={true}
             />
           ))}
         </div>
         {isCR && (
-          <EditClassDialog
-            isOpen={isDialogOpen}
-            setIsOpen={setIsDialogOpen}
-            entry={editingClass}
-          />
+          <>
+            <EditClassDialog
+              isOpen={isDialogOpen}
+              setIsOpen={setIsDialogOpen}
+              entry={editingClass}
+            />
+            {deleteTargetId && (
+              <DeleteClassAlert
+                isOpen={!!deleteTargetId}
+                setIsOpen={(open) => !open && setDeleteTargetId(null)}
+                entryId={deleteTargetId}
+              />
+            )}
+          </>
         )}
         {isCR && (
           <AlertDialog
@@ -315,17 +329,27 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
                   entry={entry}
                   isCR={isCR}
                   onEdit={handleEdit}
+                  onDelete={handleDelete}
                 />
               ))}
           </TableBody>
         </Table>
       </CardContent>
       {isCR && (
-        <EditClassDialog
-          isOpen={isDialogOpen}
-          setIsOpen={setIsDialogOpen}
-          entry={editingClass}
-        />
+        <>
+          <EditClassDialog
+            isOpen={isDialogOpen}
+            setIsOpen={setIsDialogOpen}
+            entry={editingClass}
+          />
+          {deleteTargetId && (
+            <DeleteClassAlert
+              isOpen={!!deleteTargetId}
+              setIsOpen={(open) => !open && setDeleteTargetId(null)}
+              entryId={deleteTargetId}
+            />
+          )}
+        </>
       )}
       {isCR && (
         <AlertDialog
