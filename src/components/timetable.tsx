@@ -45,6 +45,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format } from "date-fns";
 
 type TimetableProps = {
   data: TimetableEntry[];
@@ -59,6 +61,10 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
   const [isTemplateAlertOpen, setTemplateAlertOpen] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const today = format(new Date(), 'EEE');
+  const [selectedDay, setSelectedDay] = useState(today);
 
   const handleAddNew = () => {
     setEditingClass(null);
@@ -138,6 +144,8 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
       setTemplateAlertOpen(false); // Close the dialog
     }
   };
+  
+  const filteredData = data.filter(entry => format(entry.date.toDate(), 'EEE') === selectedDay);
 
   if (isMobile) {
     return (
@@ -166,12 +174,29 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
             </div>
           )}
         </div>
+
+        <Tabs defaultValue={selectedDay} onValueChange={setSelectedDay} className="w-full">
+            <TabsList className="grid w-full grid-cols-7">
+                {daysOfWeek.map((day) => (
+                <TabsTrigger key={day} value={day}>
+                    {day}
+                </TabsTrigger>
+                ))}
+            </TabsList>
+        </Tabs>
+
         {loading && (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} className="h-40 w-full rounded-lg" />
             ))}
           </div>
+        )}
+        {!loading && data.length > 0 && filteredData.length === 0 && (
+             <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
+                <BookOpen className="mx-auto h-12 w-12" />
+                <p className="mt-4">No classes scheduled for {selectedDay}.</p>
+            </div>
         )}
         {!loading && data.length === 0 && (
           <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
@@ -185,7 +210,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
           </div>
         )}
         <div className="space-y-3">
-          {data.map((entry) => (
+          {filteredData.map((entry) => (
             <TimetableRow
               key={entry.id}
               entry={entry}
@@ -261,6 +286,15 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
         )}
       </CardHeader>
       <CardContent>
+        <Tabs defaultValue={selectedDay} onValueChange={setSelectedDay} className="w-full">
+            <TabsList className="grid w-full grid-cols-7 mb-4">
+                {daysOfWeek.map((day) => (
+                <TabsTrigger key={day} value={day}>
+                    {day}
+                </TabsTrigger>
+                ))}
+            </TabsList>
+        </Tabs>
         <Table>
           <TableHeader>
             <TableRow>
@@ -283,6 +317,13 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
                   </TableCell>
                 </TableRow>
               ))}
+            {!loading && data.length > 0 && filteredData.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={isCR ? 6 : 5} className="h-24 text-center">
+                  No classes scheduled for {selectedDay}.
+                </TableCell>
+              </TableRow>
+            )}
             {!loading && data.length === 0 && (
               <TableRow>
                 <TableCell colSpan={isCR ? 6 : 5} className="h-24 text-center">
@@ -291,7 +332,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
               </TableRow>
             )}
             {!loading &&
-              data.map((entry) => (
+              filteredData.map((entry) => (
                 <TimetableRow
                   key={entry.id}
                   entry={entry}
