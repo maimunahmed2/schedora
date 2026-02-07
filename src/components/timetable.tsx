@@ -10,17 +10,41 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { PlusCircle, BookOpen, BookCopy, Loader2 } from "lucide-react";
 import { type TimetableEntry } from "@/lib/types";
 import { TimetableRow } from "./timetable-row";
 import { EditClassDialog } from "./edit-class-dialog";
 import { Skeleton } from "./ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { writeBatch, doc, collection, serverTimestamp, Timestamp, setDoc } from "firebase/firestore";
+import {
+  writeBatch,
+  doc,
+  collection,
+  serverTimestamp,
+  Timestamp,
+  setDoc,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleTemplate } from "@/lib/schedule-template";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type TimetableProps = {
   data: TimetableEntry[];
@@ -32,6 +56,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<TimetableEntry | null>(null);
   const [isSeeding, setIsSeeding] = useState(false);
+  const [isTemplateAlertOpen, setTemplateAlertOpen] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -48,49 +73,72 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
   const handleLoadTemplate = async () => {
     setIsSeeding(true);
     try {
-        const batch = writeBatch(db);
-        const today = new Date();
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
+      const batch = writeBatch(db);
+      const today = new Date();
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
 
-        scheduleTemplate.forEach(templateEntry => {
-            const newDocRef = doc(collection(db, "timetable"));
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
 
-            const classDate = new Date(startOfWeek);
-            classDate.setDate(startOfWeek.getDate() + templateEntry.dayOfWeek);
-            classDate.setHours(0, 0, 0, 0);
+      // Query for documents in the current week and delete them
+      const timetableRef = collection(db, "timetable");
+      const q = query(
+        timetableRef,
+        where("date", ">=", Timestamp.fromDate(startOfWeek)),
+        where("date", "<=", Timestamp.fromDate(endOfWeek))
+      );
+      const snapshot = await getDocs(q);
 
-            const data = {
-                subject: templateEntry.subject,
-                faculty: templateEntry.faculty,
-                time: templateEntry.time,
-                status: templateEntry.status,
-                date: Timestamp.fromDate(classDate),
-                createdAt: serverTimestamp(),
-            };
+      snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
 
-            batch.set(newDocRef, data);
-        });
+      // Add template entries
+      scheduleTemplate.forEach((templateEntry) => {
+        const newDocRef = doc(collection(db, "timetable"));
 
-        await batch.commit();
-        await setDoc(doc(db, "metadata", "timetable"), { lastUpdated: serverTimestamp() });
+        const classDate = new Date(startOfWeek);
+        classDate.setDate(startOfWeek.getDate() + templateEntry.dayOfWeek);
+        classDate.setHours(0, 0, 0, 0);
 
-        toast({
-            title: "Schedule Loaded",
-            description: "The template schedule for this week has been loaded.",
-        });
+        const data = {
+          subject: templateEntry.subject,
+          faculty: templateEntry.faculty,
+          time: templateEntry.time,
+          status: templateEntry.status,
+          date: Timestamp.fromDate(classDate),
+          createdAt: serverTimestamp(),
+        };
 
+        batch.set(newDocRef, data);
+      });
+
+      await batch.commit();
+      await setDoc(doc(db, "metadata", "timetable"), {
+        lastUpdated: serverTimestamp(),
+      });
+
+      toast({
+        title: "Schedule Loaded",
+        description: "The template schedule for this week has been loaded.",
+      });
     } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Error Loading Schedule",
-            description: error.message || "Could not load the schedule. Please try again.",
-        });
+      console.error("Error loading schedule template:", error);
+      toast({
+        variant: "destructive",
+        title: "Error Loading Schedule",
+        description:
+          error.message || "Could not load the schedule. Please try again.",
+      });
     } finally {
-        setIsSeeding(false);
+      setIsSeeding(false);
+      setTemplateAlertOpen(false); // Close the dialog
     }
   };
-  
+
   if (isMobile) {
     return (
       <div className="space-y-4">
@@ -98,29 +146,42 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
           <h1 className="text-2xl font-bold">Timetable</h1>
           {isCR && (
             <div className="flex items-center gap-2">
-                {data.length === 0 && !loading && (
-                    <Button onClick={handleLoadTemplate} disabled={isSeeding} variant="outline" size="sm">
-                        {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BookCopy className="mr-2 h-4 w-4" />}
-                        {isSeeding ? 'Loading...' : 'Load Template'}
-                    </Button>
+              <Button
+                onClick={() => setTemplateAlertOpen(true)}
+                disabled={isSeeding}
+                variant="outline"
+                size="sm"
+              >
+                {isSeeding ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <BookCopy className="mr-2 h-4 w-4" />
                 )}
-                <Button onClick={handleAddNew} size="sm">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add
-                </Button>
+                {isSeeding ? "Loading..." : "Load Template"}
+              </Button>
+              <Button onClick={handleAddNew} size="sm">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add
+              </Button>
             </div>
           )}
         </div>
         {loading && (
           <div className="space-y-4">
-            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-40 w-full rounded-lg" />)}
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-40 w-full rounded-lg" />
+            ))}
           </div>
         )}
         {!loading && data.length === 0 && (
           <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
             <BookOpen className="mx-auto h-12 w-12" />
             <p className="mt-4">No classes scheduled yet.</p>
-            {isCR && <p className="mt-2 text-sm">Click "Load Template" to get started.</p>}
+            {isCR && (
+              <p className="mt-2 text-sm">
+                Click "Load Template" to get started.
+              </p>
+            )}
           </div>
         )}
         <div className="space-y-3">
@@ -141,6 +202,35 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
             entry={editingClass}
           />
         )}
+        {isCR && (
+          <AlertDialog
+            open={isTemplateAlertOpen}
+            onOpenChange={setTemplateAlertOpen}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Load Week Template?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will replace all classes for the current week with the
+                  template. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isSeeding}>Cancel</AlertDialogCancel>
+                <Button
+                  onClick={handleLoadTemplate}
+                  variant="destructive"
+                  disabled={isSeeding}
+                >
+                  {isSeeding && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isSeeding ? "Loading..." : "Load Template"}
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     );
   }
@@ -150,18 +240,24 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Class Schedule</CardTitle>
         {isCR && (
-            <div className="flex items-center gap-2">
-                {data.length === 0 && !loading && (
-                    <Button onClick={handleLoadTemplate} disabled={isSeeding} variant="outline">
-                        {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BookCopy className="mr-2 h-4 w-4" />}
-                        {isSeeding ? 'Loading...' : 'Load Week Template'}
-                    </Button>
-                )}
-                <Button onClick={handleAddNew}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Class
-                </Button>
-            </div>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setTemplateAlertOpen(true)}
+              disabled={isSeeding}
+              variant="outline"
+            >
+              {isSeeding ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <BookCopy className="mr-2 h-4 w-4" />
+              )}
+              {isSeeding ? "Loading..." : "Load Week Template"}
+            </Button>
+            <Button onClick={handleAddNew}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Class
+            </Button>
+          </div>
         )}
       </CardHeader>
       <CardContent>
@@ -173,7 +269,9 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
               <TableHead>Date</TableHead>
               <TableHead>Time</TableHead>
               <TableHead>Status</TableHead>
-              {isCR && <TableHead className="text-right w-[100px]">Actions</TableHead>}
+              {isCR && (
+                <TableHead className="text-right w-[100px]">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -210,6 +308,33 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
           setIsOpen={setIsDialogOpen}
           entry={editingClass}
         />
+      )}
+      {isCR && (
+        <AlertDialog
+          open={isTemplateAlertOpen}
+          onOpenChange={setTemplateAlertOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Load Week Template?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will replace all classes for the current week with the
+                template. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isSeeding}>Cancel</AlertDialogCancel>
+              <Button
+                onClick={handleLoadTemplate}
+                variant="destructive"
+                disabled={isSeeding}
+              >
+                {isSeeding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSeeding ? "Loading..." : "Load Template"}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </Card>
   );
