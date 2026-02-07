@@ -4,7 +4,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { doc, setDoc, addDoc, collection, serverTimestamp, updateDoc, Timestamp } from "firebase/firestore";
+import { doc, setDoc, addDoc, collection, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { type TimetableEntry } from "@/lib/types";
@@ -20,11 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { Loader2 } from "lucide-react";
 
 type EditClassDialogProps = {
   isOpen: boolean;
@@ -35,10 +31,14 @@ type EditClassDialogProps = {
 const classSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   faculty: z.string().min(1, "Faculty is required"),
-  date: z.date({ required_error: "A date is required." }),
+  dayOfWeek: z.string().refine(val => !isNaN(parseInt(val, 10)), {
+    message: "Day of the week is required",
+  }).transform(Number),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   status: z.enum(["Scheduled", "Postponed", "Cancelled"]),
 });
+
+const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogProps) {
   const { toast } = useToast();
@@ -53,7 +53,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
         form.reset({
           subject: entry.subject,
           faculty: entry.faculty,
-          date: entry.date.toDate(),
+          dayOfWeek: String(entry.dayOfWeek),
           time: entry.time,
           status: entry.status,
         });
@@ -61,7 +61,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
         form.reset({
           subject: "",
           faculty: "",
-          date: new Date(),
+          dayOfWeek: "1", // Default to Monday
           time: "",
           status: "Scheduled",
         });
@@ -71,14 +71,11 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
 
   const onSubmit = async (values: z.infer<typeof classSchema>) => {
     try {
-      const { date, time, ...rest } = values;
+      const { time, dayOfWeek, ...rest } = values;
       
-      const dateToStore = new Date(date);
-      dateToStore.setHours(0, 0, 0, 0);
-
       const data = {
         ...rest,
-        date: Timestamp.fromDate(dateToStore),
+        dayOfWeek: dayOfWeek,
         time: time,
       };
 
@@ -131,22 +128,21 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
                 </FormItem>
             )} />
             <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="date" render={({ field }) => (
-                  <FormItem className="flex flex-col pt-2">
-                    <FormLabel className="mb-2">Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                      </PopoverContent>
-                    </Popover>
+               <FormField control={form.control} name="dayOfWeek" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Day of the Week</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger><SelectValue placeholder="Select a day" /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {daysOfWeek.map((day, index) => (
+                            <SelectItem key={day} value={String(index)}>
+                                {day}
+                            </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
               )} />

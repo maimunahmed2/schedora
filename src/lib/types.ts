@@ -6,7 +6,7 @@ export type TimetableEntry = {
   id: string;
   subject: string;
   faculty: string;
-  date: Timestamp;
+  dayOfWeek: number; // 0=Sun, 6=Sat
   time: string;
   status: ClassStatus;
   createdAt: Timestamp;

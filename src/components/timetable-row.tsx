@@ -5,7 +5,7 @@ import { type TimetableEntry } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Edit, Trash2, CalendarDays, Clock, XCircle, AlertTriangle, CheckCircle } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Clock, XCircle, AlertTriangle, CheckCircle } from "lucide-react";
 import { DeleteClassAlert } from "./delete-class-alert";
 import {
   DropdownMenu,
@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 
 type TimetableRowProps = {
   entry: TimetableEntry;
@@ -34,8 +33,6 @@ export function TimetableRow({ entry, isCR, onEdit, isMobile = false }: Timetabl
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const StatusIcon = statusConfig[entry.status].icon;
   
-  const displayDate = entry.date.toDate();
-
   const rowHighlightClass = () => {
     switch (entry.status) {
       case "Postponed": return "bg-accent/10";
@@ -86,10 +83,6 @@ export function TimetableRow({ entry, isCR, onEdit, isMobile = false }: Timetabl
            </CardHeader>
            <CardContent className="p-4 pt-0 space-y-2 text-sm">
                <div className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                  <span>{format(displayDate, "EEEE, MMMM d")}</span>
-               </div>
-               <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span>{entry.time}</span>
                </div>
@@ -110,7 +103,6 @@ export function TimetableRow({ entry, isCR, onEdit, isMobile = false }: Timetabl
       <TableRow className={cn("transition-colors", rowHighlightClass())}>
         <TableCell className="font-medium">{entry.subject}</TableCell>
         <TableCell>{entry.faculty}</TableCell>
-        <TableCell>{format(displayDate, "EEE, MMM d")}</TableCell>
         <TableCell>{entry.time}</TableCell>
         <TableCell>
           <Badge variant="outline" className={cn("font-medium", badgeHighlightClass())}>

@@ -27,10 +27,8 @@ import {
   doc,
   collection,
   serverTimestamp,
-  Timestamp,
   setDoc,
   query,
-  where,
   getDocs,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -80,24 +78,10 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
     setIsSeeding(true);
     try {
       const batch = writeBatch(db);
-      const today = new Date();
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay());
-      startOfWeek.setHours(0, 0, 0, 0);
-
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6);
-      endOfWeek.setHours(23, 59, 59, 999);
-
-      // Query for documents in the current week and delete them
       const timetableRef = collection(db, "timetable");
-      const q = query(
-        timetableRef,
-        where("date", ">=", Timestamp.fromDate(startOfWeek)),
-        where("date", "<=", Timestamp.fromDate(endOfWeek))
-      );
-      const snapshot = await getDocs(q);
-
+      
+      // Query for all documents and delete them
+      const snapshot = await getDocs(timetableRef);
       snapshot.docs.forEach((doc) => {
         batch.delete(doc.ref);
       });
@@ -105,20 +89,14 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
       // Add template entries
       scheduleTemplate.forEach((templateEntry) => {
         const newDocRef = doc(collection(db, "timetable"));
-
-        const classDate = new Date(startOfWeek);
-        classDate.setDate(startOfWeek.getDate() + templateEntry.dayOfWeek);
-        classDate.setHours(0, 0, 0, 0);
-
         const data = {
           subject: templateEntry.subject,
           faculty: templateEntry.faculty,
           time: templateEntry.time,
           status: templateEntry.status,
-          date: Timestamp.fromDate(classDate),
+          dayOfWeek: templateEntry.dayOfWeek,
           createdAt: serverTimestamp(),
         };
-
         batch.set(newDocRef, data);
       });
 
@@ -129,7 +107,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
 
       toast({
         title: "Schedule Loaded",
-        description: "The template schedule for this week has been loaded.",
+        description: "The template schedule for the week has been loaded.",
       });
     } catch (error: any) {
       console.error("Error loading schedule template:", error);
@@ -145,7 +123,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
     }
   };
   
-  const filteredData = data.filter(entry => format(entry.date.toDate(), 'EEE') === selectedDay);
+  const filteredData = data.filter(entry => daysOfWeek[entry.dayOfWeek] === selectedDay);
 
   if (isMobile) {
     return (
@@ -236,7 +214,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Load Full Week Schedule?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will replace all classes for the current week with the
+                  This will replace all classes with the
                   pre-defined schedule template. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
@@ -298,9 +276,8 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[25%]">Subject</TableHead>
+              <TableHead className="w-[30%]">Subject</TableHead>
               <TableHead>Faculty</TableHead>
-              <TableHead>Date</TableHead>
               <TableHead>Time</TableHead>
               <TableHead>Status</TableHead>
               {isCR && (
@@ -312,21 +289,21 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
             {loading &&
               [...Array(5)].map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={isCR ? 6 : 5} className="p-2">
+                  <TableCell colSpan={isCR ? 5 : 4} className="p-2">
                     <Skeleton className="h-8 w-full" />
                   </TableCell>
                 </TableRow>
               ))}
             {!loading && data.length > 0 && filteredData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={isCR ? 6 : 5} className="h-24 text-center">
+                <TableCell colSpan={isCR ? 5 : 4} className="h-24 text-center">
                   No classes scheduled for {selectedDay}.
                 </TableCell>
               </TableRow>
             )}
             {!loading && data.length === 0 && (
               <TableRow>
-                <TableCell colSpan={isCR ? 6 : 5} className="h-24 text-center">
+                <TableCell colSpan={isCR ? 5 : 4} className="h-24 text-center">
                   No classes scheduled. Try loading the week's schedule.
                 </TableCell>
               </TableRow>
@@ -359,7 +336,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
             <AlertDialogHeader>
               <AlertDialogTitle>Load Full Week Schedule?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will replace all classes for the current week with the
+                This will replace all classes with the
                 pre-defined schedule template. This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
