@@ -17,7 +17,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // Listen for timetable updates
-    const q = query(collection(db, "timetable"), orderBy("date", "desc"), orderBy("time", "desc"));
+    const q = query(collection(db, "timetable"), orderBy("dateTime", "desc"));
     const unsubscribeTimetable = onSnapshot(q, (querySnapshot) => {
       const entries: TimetableEntry[] = [];
       querySnapshot.forEach((doc) => {

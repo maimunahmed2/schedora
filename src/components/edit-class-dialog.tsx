@@ -4,7 +4,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { doc, setDoc, addDoc, collection, serverTimestamp, updateDoc } from "firebase/firestore";
+import { doc, setDoc, addDoc, collection, serverTimestamp, updateDoc, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { type TimetableEntry } from "@/lib/types";
@@ -49,28 +49,37 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
 
   React.useEffect(() => {
     if (isOpen) {
-      // Parse YYYY-MM-DD string into a Date object for the calendar
-      let date = new Date();
-      if(entry?.date) {
-        const parts = entry.date.split('-').map(Number);
-        date = new Date(parts[0], parts[1] - 1, parts[2]);
+      if (entry) {
+        const dateTime = entry.dateTime.toDate();
+        form.reset({
+          subject: entry.subject,
+          faculty: entry.faculty,
+          date: dateTime,
+          time: format(dateTime, "HH:mm"),
+          status: entry.status,
+        });
+      } else {
+        form.reset({
+          subject: "",
+          faculty: "",
+          date: new Date(),
+          time: "",
+          status: "Scheduled",
+        });
       }
-
-      form.reset({
-        subject: entry?.subject || "",
-        faculty: entry?.faculty || "",
-        date: entry ? date : new Date(),
-        time: entry?.time || "",
-        status: entry?.status || "Scheduled",
-      });
     }
   }, [entry, isOpen, form]);
 
   const onSubmit = async (values: z.infer<typeof classSchema>) => {
     try {
+      const { date, time, ...rest } = values;
+      const [hours, minutes] = time.split(':').map(Number);
+      const dateTime = new Date(date);
+      dateTime.setHours(hours, minutes, 0, 0);
+
       const data = {
-        ...values,
-        date: format(values.date, "yyyy-MM-dd"), // Store date in a consistent format
+        ...rest,
+        dateTime: Timestamp.fromDate(dateTime),
       };
 
       if (entry) {
