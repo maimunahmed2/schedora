@@ -51,6 +51,7 @@ export default function LoginPage() {
         title: "Login Failed",
         description: errorMessage,
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }

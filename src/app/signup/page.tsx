@@ -56,6 +56,7 @@ export default function SignupPage() {
         title: "Sign-up Failed",
         description: errorMessage,
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }
