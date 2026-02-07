@@ -50,7 +50,7 @@ export default function SignupPage() {
     } catch (error: any) {
       const errorMessage = error.code === 'auth/email-already-in-use'
         ? 'This email is already registered.'
-        : 'An unexpected error occurred. Please try again.';
+        : error.message || 'An unexpected error occurred. Please try again.';
       toast({
         variant: "destructive",
         title: "Sign-up Failed",

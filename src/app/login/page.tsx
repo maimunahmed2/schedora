@@ -45,7 +45,7 @@ export default function LoginPage() {
     } catch (error: any) {
       const errorMessage = error.code === 'auth/invalid-credential' 
         ? 'Invalid email or password.'
-        : 'An unexpected error occurred. Please try again.';
+        : error.message || 'An unexpected error occurred. Please try again.';
       toast({
         variant: "destructive",
         title: "Login Failed",
