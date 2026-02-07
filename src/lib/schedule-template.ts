@@ -10,6 +10,9 @@ type ScheduleTemplateEntry = {
 };
 
 export const scheduleTemplate: ScheduleTemplateEntry[] = [
+  // Sunday
+  { dayOfWeek: 0, subject: "Study Group Session", faculty: "Student Lead", time: "15:00", status: "Scheduled" },
+
   // Monday
   { dayOfWeek: 1, subject: "Data Structures", faculty: "Prof. Elara Vance", time: "09:00", status: "Scheduled" },
   { dayOfWeek: 1, subject: "Algorithms", faculty: "Dr. Ronan Finch", time: "11:00", status: "Scheduled" },

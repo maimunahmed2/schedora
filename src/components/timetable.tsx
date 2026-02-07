@@ -157,7 +157,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
                 ) : (
                   <BookCopy className="mr-2 h-4 w-4" />
                 )}
-                {isSeeding ? "Loading..." : "Load Template"}
+                {isSeeding ? "Loading..." : "Load Full Week"}
               </Button>
               <Button onClick={handleAddNew} size="sm">
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -179,7 +179,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
             <p className="mt-4">No classes scheduled yet.</p>
             {isCR && (
               <p className="mt-2 text-sm">
-                Click "Load Template" to get started.
+                Click "Load Full Week" to get started.
               </p>
             )}
           </div>
@@ -209,10 +209,10 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
           >
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Load Week Template?</AlertDialogTitle>
+                <AlertDialogTitle>Load Full Week Schedule?</AlertDialogTitle>
                 <AlertDialogDescription>
                   This will replace all classes for the current week with the
-                  template. This action cannot be undone.
+                  pre-defined schedule template. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -225,7 +225,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
                   {isSeeding && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {isSeeding ? "Loading..." : "Load Template"}
+                  {isSeeding ? "Loading..." : "Load Schedule"}
                 </Button>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -251,7 +251,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
               ) : (
                 <BookCopy className="mr-2 h-4 w-4" />
               )}
-              {isSeeding ? "Loading..." : "Load Week Template"}
+              {isSeeding ? "Loading..." : "Load Full Week Schedule"}
             </Button>
             <Button onClick={handleAddNew}>
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -286,7 +286,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
             {!loading && data.length === 0 && (
               <TableRow>
                 <TableCell colSpan={isCR ? 6 : 5} className="h-24 text-center">
-                  No classes scheduled. Try loading the week's template.
+                  No classes scheduled. Try loading the week's schedule.
                 </TableCell>
               </TableRow>
             )}
@@ -316,10 +316,10 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Load Week Template?</AlertDialogTitle>
+              <AlertDialogTitle>Load Full Week Schedule?</AlertDialogTitle>
               <AlertDialogDescription>
                 This will replace all classes for the current week with the
-                template. This action cannot be undone.
+                pre-defined schedule template. This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -330,7 +330,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
                 disabled={isSeeding}
               >
                 {isSeeding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSeeding ? "Loading..." : "Load Template"}
+                {isSeeding ? "Loading..." : "Load Schedule"}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
