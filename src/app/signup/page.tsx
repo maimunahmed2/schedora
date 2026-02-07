@@ -5,50 +5,55 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Link from "next/link";
 import { ArrowLeft, BookCopy } from "lucide-react";
 
-const loginSchema = z.object({
+const signupSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<z.infer<typeof signupSchema>>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof loginSchema>) {
+  async function onSubmit(values: z.infer<typeof signupSchema>) {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      await createUserWithEmailAndPassword(auth, values.email, values.password);
       toast({
-        title: "Login Successful",
-        description: "Welcome back, Class Rep!",
+        title: "Account Created",
+        description: "You have been successfully signed up.",
       });
       router.push("/");
     } catch (error: any) {
-      const errorMessage = error.code === 'auth/invalid-credential' 
-        ? 'Invalid email or password.'
+      const errorMessage = error.code === 'auth/email-already-in-use'
+        ? 'This email is already registered.'
         : 'An unexpected error occurred. Please try again.';
       toast({
         variant: "destructive",
-        title: "Login Failed",
+        title: "Sign-up Failed",
         description: errorMessage,
       });
     } finally {
@@ -59,8 +64,8 @@ export default function LoginPage() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="absolute top-4 left-4">
-            <Link href="/" className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1 p-2 rounded-lg transition-colors hover:bg-muted">
-              <ArrowLeft size={16} /> Back to Timetable
+            <Link href="/login" className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1 p-2 rounded-lg transition-colors hover:bg-muted">
+              <ArrowLeft size={16} /> Back to Login
             </Link>
         </div>
       <Card className="w-full max-w-sm">
@@ -68,8 +73,8 @@ export default function LoginPage() {
             <div className="flex justify-center items-center mb-4">
                 <BookCopy className="h-8 w-8 text-primary" />
             </div>
-          <CardTitle className="text-2xl font-bold">CR Login</CardTitle>
-          <CardDescription>Enter your credentials to manage the timetable.</CardDescription>
+          <CardTitle className="text-2xl font-bold">Create CR Account</CardTitle>
+          <CardDescription>Enter your details to create an account.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -100,20 +105,25 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? "Creating account..." : "Sign Up"}
               </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center text-sm">
-            <p className="text-muted-foreground">
-                Don't have an account?{" "}
-                <Link href="/signup" className="text-primary hover:underline">
-                    Sign up
-                </Link>
-            </p>
-        </CardFooter>
       </Card>
     </main>
   );
