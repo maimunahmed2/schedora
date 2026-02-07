@@ -50,12 +50,11 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
   React.useEffect(() => {
     if (isOpen) {
       if (entry) {
-        const dateTime = entry.dateTime.toDate();
         form.reset({
           subject: entry.subject,
           faculty: entry.faculty,
-          date: dateTime,
-          time: format(dateTime, "HH:mm"),
+          date: entry.date.toDate(),
+          time: entry.time,
           status: entry.status,
         });
       } else {
@@ -73,13 +72,14 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
   const onSubmit = async (values: z.infer<typeof classSchema>) => {
     try {
       const { date, time, ...rest } = values;
-      const [hours, minutes] = time.split(':').map(Number);
-      const dateTime = new Date(date);
-      dateTime.setHours(hours, minutes, 0, 0);
+      
+      const dateToStore = new Date(date);
+      dateToStore.setHours(0, 0, 0, 0);
 
       const data = {
         ...rest,
-        dateTime: Timestamp.fromDate(dateTime),
+        date: Timestamp.fromDate(dateToStore),
+        time: time,
       };
 
       if (entry) {

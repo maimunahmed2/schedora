@@ -34,7 +34,7 @@ export function TimetableRow({ entry, isCR, onEdit, isMobile = false }: Timetabl
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const StatusIcon = statusConfig[entry.status].icon;
   
-  const displayDate = entry.dateTime.toDate();
+  const displayDate = entry.date.toDate();
 
   const rowHighlightClass = () => {
     switch (entry.status) {
@@ -91,7 +91,7 @@ export function TimetableRow({ entry, isCR, onEdit, isMobile = false }: Timetabl
                </div>
                <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>{format(displayDate, "HH:mm")}</span>
+                  <span>{entry.time}</span>
                </div>
            </CardContent>
            <CardFooter className="p-4 pt-0">
@@ -111,7 +111,7 @@ export function TimetableRow({ entry, isCR, onEdit, isMobile = false }: Timetabl
         <TableCell className="font-medium">{entry.subject}</TableCell>
         <TableCell>{entry.faculty}</TableCell>
         <TableCell>{format(displayDate, "EEE, MMM d")}</TableCell>
-        <TableCell>{format(displayDate, "HH:mm")}</TableCell>
+        <TableCell>{entry.time}</TableCell>
         <TableCell>
           <Badge variant="outline" className={cn("font-medium", badgeHighlightClass())}>
             <StatusIcon className="mr-2 h-4 w-4"/>

@@ -6,7 +6,8 @@ export type TimetableEntry = {
   id: string;
   subject: string;
   faculty: string;
-  dateTime: Timestamp;
+  date: Timestamp;
+  time: string;
   status: ClassStatus;
   createdAt: Timestamp;
 };
