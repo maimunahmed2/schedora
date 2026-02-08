@@ -4,7 +4,7 @@ import { type TimetableEntry } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Edit, Trash2, Clock, XCircle, AlertTriangle, CheckCircle, FileText } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Clock, XCircle, AlertTriangle, CheckCircle, FileText, Flag } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,7 +60,7 @@ export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }
               <CardTitle className="text-base">{entry.subject}</CardTitle>
               <p className="text-sm text-muted-foreground">{entry.faculty}</p>
             </div>
-            {isCR && (
+            {isCR ? (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 -my-2 -mr-2 shrink-0">
@@ -73,6 +73,24 @@ export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onDelete(entry.id)} className="text-destructive focus:text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            ) : (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 -my-2 -mr-2 shrink-0" aria-label="Report issue">
+                            <Flag className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                            <Flag className="mr-2 h-4 w-4" />
+                            Report Misinformation
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Flag className="mr-2 h-4 w-4" />
+                            Report Other Issue
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -120,8 +138,8 @@ export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }
           {entry.status}
         </Badge>
       </TableCell>
-      {isCR && (
-        <TableCell className="text-right">
+      <TableCell className="text-right">
+        {isCR ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -140,8 +158,27 @@ export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </TableCell>
-      )}
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <span className="sr-only">Report issue</span>
+                <Flag className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                    <Flag className="mr-2 h-4 w-4" />
+                    Report Misinformation
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                    <Flag className="mr-2 h-4 w-4" />
+                    Report Other Issue
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </TableCell>
     </TableRow>
   );
 }

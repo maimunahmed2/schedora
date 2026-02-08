@@ -73,7 +73,7 @@ export default function HomePage() {
       <footer className="flex flex-col items-center gap-4 p-4 text-sm text-muted-foreground">
         <span>Made with ❤️ by <b>Maimun</b></span>
         <Button asChild variant="outline">
-          <a href="https://wa.me/911234567890?text=I%20have%20a%20query%20about%20the%20timetable." target="_blank" rel="noopener noreferrer">
+          <a href="https://wa.me/919957510814?text=I%20have%20a%20query%20about%20the%20timetable." target="_blank" rel="noopener noreferrer">
             <MessageSquare className="mr-2 h-4 w-4" />
             Have a query, ask on WhatsApp
           </a>
