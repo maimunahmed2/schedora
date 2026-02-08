@@ -29,13 +29,13 @@ export function Header({ lastUpdated }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <div className="mr-auto flex items-center">
+        {/* <div className="mr-auto flex items-center">
           <BookCopy className="h-6 w-6 mr-2 text-primary" />
           <Link href="/" className="text-lg font-bold tracking-tight">
             Section A
           </Link>
-        </div>
-        <div className="flex items-center justify-end space-x-4">
+        </div> */}
+        <div className="flex w-full items-center justify-end space-x-4">
           {lastUpdated && (
             <p className="text-sm text-muted-foreground hidden sm:block">
               Last updated: {lastUpdated}

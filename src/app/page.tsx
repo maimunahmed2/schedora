@@ -8,6 +8,8 @@ import { type TimetableEntry } from "@/lib/types";
 import { Header } from "@/components/header";
 import { Timetable } from "@/components/timetable";
 import { formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { MessageSquare } from "lucide-react";
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -68,8 +70,14 @@ export default function HomePage() {
             </p>
         )}
       </main>
-      <footer className="text-center p-4 text-sm text-muted-foreground">
-        Made with ❤️ by <b>Maimun</b>
+      <footer className="flex flex-col items-center gap-4 p-4 text-sm text-muted-foreground">
+        <span>Made with ❤️ by <b>Maimun</b></span>
+        <Button asChild variant="outline">
+          <a href="https://wa.me/911234567890?text=I%20have%20a%20query%20about%20the%20timetable." target="_blank" rel="noopener noreferrer">
+            <MessageSquare className="mr-2 h-4 w-4" />
+            Have a query, ask on WhatsApp
+          </a>
+        </Button>
       </footer>
     </div>
   );
