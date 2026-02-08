@@ -69,7 +69,7 @@ export default function HomePage() {
         )}
       </main>
       <footer className="text-center p-4 text-sm text-muted-foreground">
-        Made by love by Maimun
+        Made with ❤️ by <b>Maimun</b>
       </footer>
     </div>
   );

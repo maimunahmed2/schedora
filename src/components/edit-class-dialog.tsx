@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 type EditClassDialogProps = {
   isOpen: boolean;
@@ -36,6 +37,7 @@ const classSchema = z.object({
   }).transform(Number),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   status: z.enum(["Scheduled", "Postponed", "Cancelled"]),
+  notes: z.string().optional(),
 });
 
 const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -56,6 +58,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
           dayOfWeek: String(entry.dayOfWeek),
           time: entry.time,
           status: entry.status,
+          notes: entry.notes || "",
         });
       } else {
         form.reset({
@@ -64,6 +67,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
           dayOfWeek: "1", // Default to Monday
           time: "",
           status: "Scheduled",
+          notes: "",
         });
       }
     }
@@ -71,13 +75,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
 
   const onSubmit = async (values: z.infer<typeof classSchema>) => {
     try {
-      const { time, dayOfWeek, ...rest } = values;
-      
-      const data = {
-        ...rest,
-        dayOfWeek: dayOfWeek,
-        time: time,
-      };
+      const data = { ...values };
 
       if (entry) {
         // Update existing entry
@@ -169,6 +167,15 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
                 </Select>
                 <FormMessage />
               </FormItem>
+            )} />
+            <FormField control={form.control} name="notes" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="e.g. Assignment due today" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
             )} />
             <DialogFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>

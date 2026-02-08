@@ -86,7 +86,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
       const batch = writeBatch(db);
       const timetableRef = collection(db, "timetable");
       
-      const snapshot = await getDocs(timetableRef);
+      const snapshot = await getDocs(query(timetableRef));
       snapshot.docs.forEach((doc) => {
         batch.delete(doc.ref);
       });
@@ -100,6 +100,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
           status: templateEntry.status,
           dayOfWeek: templateEntry.dayOfWeek,
           createdAt: serverTimestamp(),
+          notes: templateEntry.notes || "",
         };
         batch.set(newDocRef, data);
       });

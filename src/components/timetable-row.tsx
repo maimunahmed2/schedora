@@ -4,7 +4,7 @@ import { type TimetableEntry } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Edit, Trash2, Clock, XCircle, AlertTriangle, CheckCircle } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Clock, XCircle, AlertTriangle, CheckCircle, FileText } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,6 +83,12 @@ export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span>{entry.time}</span>
              </div>
+              {entry.notes && (
+                <div className="flex items-start gap-2 pt-1">
+                    <FileText className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+                    <p className="text-foreground">{entry.notes}</p>
+                </div>
+             )}
          </CardContent>
          <CardFooter className="p-4 pt-0">
             <Badge variant="outline" className={cn("w-full justify-center py-1.5 text-xs font-medium", badgeHighlightClass())}>
@@ -95,7 +101,17 @@ export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }
 
   return (
     <TableRow className={cn("transition-colors", rowHighlightClass())}>
-      <TableCell className="font-medium">{entry.subject}</TableCell>
+      <TableCell className="font-medium">
+        <div className="flex flex-col">
+            <span>{entry.subject}</span>
+            {entry.notes && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-1">
+                    <FileText className="h-3 w-3" />
+                    <span className="line-clamp-1">{entry.notes}</span>
+                </div>
+            )}
+        </div>
+      </TableCell>
       <TableCell>{entry.faculty}</TableCell>
       <TableCell>{entry.time}</TableCell>
       <TableCell>

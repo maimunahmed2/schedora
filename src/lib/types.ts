@@ -10,4 +10,5 @@ export type TimetableEntry = {
   time: string;
   status: ClassStatus;
   createdAt: Timestamp;
+  notes?: string;
 };

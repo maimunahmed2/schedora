@@ -7,6 +7,7 @@ type ScheduleTemplateEntry = {
   faculty: string;
   time: string;
   status: ClassStatus;
+  notes?: string;
 };
 
 export const scheduleTemplate: ScheduleTemplateEntry[] = [
@@ -14,13 +15,13 @@ export const scheduleTemplate: ScheduleTemplateEntry[] = [
   { dayOfWeek: 0, subject: "Study Group Session", faculty: "Student Lead", time: "15:00", status: "Scheduled" },
 
   // Monday
-  { dayOfWeek: 1, subject: "Data Structures", faculty: "Prof. Elara Vance", time: "09:00", status: "Scheduled" },
+  { dayOfWeek: 1, subject: "Data Structures", faculty: "Prof. Elara Vance", time: "09:00", status: "Scheduled", notes: "Assignment 1 due next week." },
   { dayOfWeek: 1, subject: "Algorithms", faculty: "Dr. Ronan Finch", time: "11:00", status: "Scheduled" },
   { dayOfWeek: 1, subject: "Database Systems", faculty: "Prof. Lena Petrova", time: "14:00", status: "Scheduled" },
   
   // Tuesday
   { dayOfWeek: 2, subject: "Operating Systems", faculty: "Dr. Kenji Tanaka", time: "10:00", status: "Scheduled" },
-  { dayOfWeek: 2, subject: "Computer Networks", faculty: "Prof. Anya Sharma", time: "13:00", status: "Scheduled" },
+  { dayOfWeek: 2, subject: "Computer Networks", faculty: "Prof. Anya Sharma", time: "13:00", status: "Scheduled", notes: "Quiz on chapters 1-3." },
   
   // Wednesday
   { dayOfWeek: 3, subject: "Mechanics (ME11001 T/A)", faculty: "Fac1", time: "09:00", status: "Scheduled" },
@@ -34,7 +35,7 @@ export const scheduleTemplate: ScheduleTemplateEntry[] = [
 
   // Friday
   { dayOfWeek: 5, subject: "Database Systems", faculty: "Prof. Lena Petrova", time: "09:00", status: "Scheduled" },
-  { dayOfWeek: 5, subject: "Software Engineering", faculty: "Dr. Marcus Thorne", time: "11:00", status: "Scheduled" },
+  { dayOfWeek: 5, subject: "Software Engineering", faculty: "Dr. Marcus Thorne", time: "11:00", status: "Scheduled", notes: "Project proposal submission." },
   { dayOfWeek: 5, subject: "Computer Networks", faculty: "Prof. Anya Sharma", time: "14:00", status: "Scheduled" },
 
   // Saturday
