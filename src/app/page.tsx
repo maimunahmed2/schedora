@@ -9,13 +9,24 @@ import { Header } from "@/components/header";
 import { Timetable } from "@/components/timetable";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
+import { BellRing, MessageSquare } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function HomePage() {
   const { user } = useAuth();
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [isNotificationAlertOpen, setIsNotificationAlertOpen] = useState(false);
 
   useEffect(() => {
     // Listen for timetable updates
@@ -72,13 +83,36 @@ export default function HomePage() {
       </main>
       <footer className="flex flex-col items-center gap-4 p-4 text-sm text-muted-foreground">
         <span>Made with ❤️ by <b>Maimun</b></span>
-        <Button asChild variant="outline">
-          <a href="https://wa.me/919957510814?text=I%20have%20a%20query%20about%20the%20timetable." target="_blank" rel="noopener noreferrer">
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Have a query, ask on WhatsApp
-          </a>
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsNotificationAlertOpen(true)}>
+                <BellRing className="mr-2 h-4 w-4" />
+                Get update notifications
+            </Button>
+            <Button asChild variant="outline">
+              <a href="https://wa.me/919957510814?text=I%20have%20a%20query%20about%20the%20timetable." target="_blank" rel="noopener noreferrer">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Have a query, ask on WhatsApp
+              </a>
+            </Button>
+        </div>
       </footer>
+
+      <AlertDialog open={isNotificationAlertOpen} onOpenChange={setIsNotificationAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Join our Telegram Channel!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Get instant notifications whenever the timetable is updated. Join our channel to stay in the loop.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction asChild>
+                <a href="https://t.me/yourchannel" target="_blank" rel="noopener noreferrer">Join Channel</a>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
