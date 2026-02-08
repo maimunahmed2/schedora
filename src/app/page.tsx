@@ -86,12 +86,12 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setIsNotificationAlertOpen(true)}>
                 <BellRing className="mr-2 h-4 w-4" />
-                Want to get notification updates when changes are made here?
+                Get Timetable Updates
             </Button>
             <Button asChild variant="outline">
               <a href="https://wa.me/919957510814?text=I%20have%20a%20query%20about%20the%20timetable." target="_blank" rel="noopener noreferrer">
                 <MessageSquare className="mr-2 h-4 w-4" />
-                Have a query, ask on WhatsApp
+                Ask a Query
               </a>
             </Button>
         </div>
