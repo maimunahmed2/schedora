@@ -32,7 +32,7 @@ export function Header({ lastUpdated }: HeaderProps) {
         <div className="mr-auto flex items-center">
           <BookCopy className="h-6 w-6 mr-2 text-primary" />
           <Link href="/" className="text-lg font-bold tracking-tight">
-            ClassPulse
+            Section A
           </Link>
         </div>
         <div className="flex items-center justify-end space-x-4">
