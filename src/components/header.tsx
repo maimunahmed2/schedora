@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { BookCopy, LogOut, Loader2 } from "lucide-react";
+import { BookCopy, LogOut } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 
 type HeaderProps = {
@@ -28,14 +28,14 @@ export function Header({ lastUpdated }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        {/* <div className="mr-auto flex items-center">
-          <BookCopy className="h-6 w-6 mr-2 text-primary" />
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BookCopy className="h-6 w-6 text-primary" />
           <Link href="/" className="text-lg font-bold tracking-tight">
-            Section A
+            ClassPulse
           </Link>
-        </div> */}
-        <div className="flex w-full items-center justify-end space-x-4">
+        </div>
+        <div className="flex items-center space-x-4">
           {lastUpdated && (
             <p className="text-sm text-muted-foreground hidden sm:block">
               Last updated: {lastUpdated}

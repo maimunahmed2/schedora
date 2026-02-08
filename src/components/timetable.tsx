@@ -46,7 +46,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 
 type TimetableProps = {
   data: TimetableEntry[];
@@ -134,11 +133,8 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
   if (isMobile) {
     return (
       <div className="space-y-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold">Timetable</h1>
-            <Badge variant="secondary" className="mt-1">Section A</Badge>
-          </div>
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Class Schedule</h1>
           {isCR && (
             <div className="flex items-center gap-2">
               <Button
@@ -259,11 +255,8 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-start justify-between">
-        <div>
-          <CardTitle>Class Schedule</CardTitle>
-          <Badge variant="secondary" className="mt-2">Section A</Badge>
-        </div>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Class Schedule</CardTitle>
         {isCR && (
           <div className="flex items-center gap-2">
             <Button
