@@ -18,7 +18,7 @@ type TimetableRowProps = {
   entry: TimetableEntry;
   isCR: boolean;
   onEdit: (entry: TimetableEntry) => void;
-  onDelete: (entryId: string) => void;
+  onDelete: (entry: TimetableEntry) => void;
   isMobile?: boolean;
 };
 
@@ -80,7 +80,7 @@ export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }
                         <DropdownMenuItem onClick={() => onEdit(entry)}>
                             <Edit className="mr-2 h-4 w-4" /> Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onDelete(entry.id)} className="text-destructive focus:text-destructive">
+                        <DropdownMenuItem onClick={() => onDelete(entry)} className="text-destructive focus:text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                         </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -157,7 +157,7 @@ export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDelete(entry.id)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+              <DropdownMenuItem onClick={() => onDelete(entry)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>

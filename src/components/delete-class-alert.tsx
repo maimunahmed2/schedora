@@ -6,7 +6,6 @@ import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -16,22 +15,30 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
+import { type TimetableEntry } from "@/lib/types";
+import { notifyTelegram } from "@/ai/flows/notify-telegram-flow";
 
 type DeleteClassAlertProps = {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  entryId: string;
+  entry: TimetableEntry;
 };
 
-export function DeleteClassAlert({ isOpen, setIsOpen, entryId }: DeleteClassAlertProps) {
+export function DeleteClassAlert({ isOpen, setIsOpen, entry }: DeleteClassAlertProps) {
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, "timetable", entryId));
+      await deleteDoc(doc(db, "timetable", entry.id));
       await setDoc(doc(db, "metadata", "timetable"), { lastUpdated: serverTimestamp() });
+      
+      const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const day = daysOfWeek[entry.dayOfWeek];
+      const notificationMessage = `*Class Removed*\n\nThe subject *${entry.subject}* on *${day}* at *${entry.time}* has been removed from the timetable.`;
+      notifyTelegram({ message: notificationMessage });
+
       toast({
         title: "Class Deleted",
         description: "The class has been removed from the timetable.",

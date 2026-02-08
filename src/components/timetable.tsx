@@ -57,7 +57,7 @@ type TimetableProps = {
 export function Timetable({ data, loading, isCR }: TimetableProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<TimetableEntry | null>(null);
-  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<TimetableEntry | null>(null);
   const [isSeeding, setIsSeeding] = useState(false);
   const [isTemplateAlertOpen, setTemplateAlertOpen] = useState(false);
   const { toast } = useToast();
@@ -77,8 +77,8 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
     setIsDialogOpen(true);
   };
   
-  const handleDelete = (entryId: string) => {
-    setDeleteTargetId(entryId);
+  const handleDelete = (entry: TimetableEntry) => {
+    setDeleteTarget(entry);
   };
 
   const handleLoadTemplate = async () => {
@@ -215,11 +215,11 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
               setIsOpen={setIsDialogOpen}
               entry={editingClass}
             />
-            {deleteTargetId && (
+            {deleteTarget && (
               <DeleteClassAlert
-                isOpen={!!deleteTargetId}
-                setIsOpen={(open) => !open && setDeleteTargetId(null)}
-                entryId={deleteTargetId}
+                isOpen={!!deleteTarget}
+                setIsOpen={(open) => !open && setDeleteTarget(null)}
+                entry={deleteTarget}
               />
             )}
           </>
@@ -302,30 +302,28 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
               <TableHead>Faculty</TableHead>
               <TableHead>Time</TableHead>
               <TableHead>Status</TableHead>
-              {isCR && (
-                <TableHead className="text-right w-[100px]">Actions</TableHead>
-              )}
+              <TableHead className="text-right w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading &&
               [...Array(5)].map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={isCR ? 5 : 4} className="p-2">
+                  <TableCell colSpan={5} className="p-2">
                     <Skeleton className="h-8 w-full" />
                   </TableCell>
                 </TableRow>
               ))}
             {!loading && data.length > 0 && filteredData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={isCR ? 5 : 4} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   No classes scheduled for {selectedDay}.
                 </TableCell>
               </TableRow>
             )}
             {!loading && data.length === 0 && (
               <TableRow>
-                <TableCell colSpan={isCR ? 5 : 4} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   No classes scheduled. Try loading the week's schedule.
                 </TableCell>
               </TableRow>
@@ -350,11 +348,11 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
             setIsOpen={setIsDialogOpen}
             entry={editingClass}
           />
-          {deleteTargetId && (
+          {deleteTarget && (
             <DeleteClassAlert
-              isOpen={!!deleteTargetId}
-              setIsOpen={(open) => !open && setDeleteTargetId(null)}
-              entryId={deleteTargetId}
+              isOpen={!!deleteTarget}
+              setIsOpen={(open) => !open && setDeleteTarget(null)}
+              entry={deleteTarget}
             />
           )}
         </>

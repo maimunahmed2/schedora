@@ -22,6 +22,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { notifyTelegram } from "@/ai/flows/notify-telegram-flow";
 
 type EditClassDialogProps = {
   isOpen: boolean;
@@ -76,19 +77,35 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
   const onSubmit = async (values: z.infer<typeof classSchema>) => {
     try {
       const data = { ...values };
+      let notificationMessage = "";
+      const day = daysOfWeek[data.dayOfWeek];
 
       if (entry) {
         // Update existing entry
         const docRef = doc(db, "timetable", entry.id);
         await updateDoc(docRef, data);
         toast({ title: "Class Updated", description: "The class details have been saved." });
+        
+        if (entry.status !== data.status) {
+            notificationMessage = `*Class Update*\n\nThe status of *${data.subject}* on *${day}* at *${data.time}* has been changed to *${data.status}*.`;
+        }
       } else {
         // Add new entry
         await addDoc(collection(db, "timetable"), { ...data, createdAt: serverTimestamp() });
         toast({ title: "Class Added", description: "The new class has been added to the timetable." });
+        
+        notificationMessage = `*New Class Added*\n\n*Subject:* ${data.subject}\n*Day:* ${day}\n*Time:* ${data.time}\n*Status:* ${data.status}`;
+        if (data.notes) {
+            notificationMessage += `\n*Notes:* ${data.notes}`;
+        }
       }
+
       // Update the lastUpdated timestamp in a separate document
       await setDoc(doc(db, "metadata", "timetable"), { lastUpdated: serverTimestamp() });
+
+      if (notificationMessage) {
+        notifyTelegram({ message: notificationMessage });
+      }
 
       setIsOpen(false);
     } catch (error: any) {
@@ -129,7 +146,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
                <FormField control={form.control} name="dayOfWeek" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Day of the Week</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
                       <FormControl>
                         <SelectTrigger><SelectValue placeholder="Select a day" /></SelectTrigger>
                       </FormControl>
