@@ -295,28 +295,30 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
               <TableHead>Faculty</TableHead>
               <TableHead>Time</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              {isCR && (
+                <TableHead className="text-right w-[100px]">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading &&
               [...Array(5)].map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={5} className="p-2">
+                  <TableCell colSpan={isCR ? 5 : 4} className="p-2">
                     <Skeleton className="h-8 w-full" />
                   </TableCell>
                 </TableRow>
               ))}
             {!loading && data.length > 0 && filteredData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={isCR ? 5 : 4} className="h-24 text-center">
                   No classes scheduled for {selectedDay}.
                 </TableCell>
               </TableRow>
             )}
             {!loading && data.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={isCR ? 5 : 4} className="h-24 text-center">
                   No classes scheduled. Try loading the week's schedule.
                 </TableCell>
               </TableRow>

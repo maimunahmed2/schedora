@@ -30,6 +30,15 @@ const statusConfig = {
 
 export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }: TimetableRowProps) {
   const StatusIcon = statusConfig[entry.status].icon;
+
+  const handleReport = () => {
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const day = daysOfWeek[entry.dayOfWeek];
+    const message = `I'd like to report potential misinformation for the following class:\n\n*Subject:* ${entry.subject}\n*Faculty:* ${entry.faculty}\n*Day:* ${day}\n*Time:* ${entry.time}\n\nPlease specify the issue:`;
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/919957510814?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
   
   const rowHighlightClass = () => {
     switch (entry.status) {
@@ -84,13 +93,9 @@ export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleReport}>
                             <Flag className="mr-2 h-4 w-4" />
                             Report Misinformation
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Flag className="mr-2 h-4 w-4" />
-                            Report Other Issue
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -167,13 +172,9 @@ export function TimetableRow({ entry, isCR, onEdit, onDelete, isMobile = false }
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleReport}>
                     <Flag className="mr-2 h-4 w-4" />
                     Report Misinformation
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                    <Flag className="mr-2 h-4 w-4" />
-                    Report Other Issue
                 </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
