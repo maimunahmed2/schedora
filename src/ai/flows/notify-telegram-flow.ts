@@ -17,8 +17,7 @@ const NotifyTelegramInputSchema = z.object({
 export type NotifyTelegramInput = z.infer<typeof NotifyTelegramInputSchema>;
 
 export async function notifyTelegram(input: NotifyTelegramInput): Promise<void> {
-  // We run this out of band, no need to wait for it.
-  notifyTelegramFlow(input);
+  await notifyTelegramFlow(input);
 }
 
 const notifyTelegramFlow = ai.defineFlow(
@@ -28,8 +27,6 @@ const notifyTelegramFlow = ai.defineFlow(
     outputSchema: z.void(),
   },
   async ({ message }) => {
-    // This flow is designed to be fire-and-forget.
-    // We don't want to block the user's UI for a notification.
     await sendTelegramMessage(message);
   }
 );
