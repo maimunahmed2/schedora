@@ -38,6 +38,9 @@ const classSchema = z.object({
     message: "Day of the week is required",
   }).transform(Number),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
+  duration: z.string().refine(val => !isNaN(parseInt(val, 10)) && parseInt(val, 10) > 0, {
+    message: "Duration must be a positive number."
+  }).transform(Number),
   status: z.enum(["Scheduled", "Postponed", "Cancelled"]),
   notes: z.string().optional(),
   sendNotification: z.boolean().default(true),
@@ -63,6 +66,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
           faculty: entry.faculty,
           dayOfWeek: String(entry.dayOfWeek),
           time: entry.time,
+          duration: String(entry.duration),
           status: entry.status,
           notes: entry.notes || "",
           sendNotification: true,
@@ -73,6 +77,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
           faculty: "",
           dayOfWeek: "1", // Default to Monday
           time: "",
+          duration: "50",
           status: "Scheduled",
           notes: "",
           sendNotification: true,
@@ -128,6 +133,9 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
         if (entry.time !== data.time) {
           changes.push(`*Time:* ${entry.time} -> *${data.time}*`);
         }
+        if (entry.duration !== data.duration) {
+          changes.push(`*Duration:* ${entry.duration} mins -> *${data.duration} mins*`);
+        }
         if (entry.status !== data.status) {
           changes.push(`*Status:* ${entry.status} -> *${data.status}*`);
         }
@@ -147,7 +155,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
         await addDoc(collection(db, "timetable"), { ...data, createdAt: serverTimestamp() });
         toast({ title: "Class Added", description: "The new class has been added to the timetable." });
         
-        notificationMessage = `*New Class Added*\n\n*Subject:* ${data.subject}\n*Day:* ${day}\n*Time:* ${data.time}\n*Status:* ${data.status}`;
+        notificationMessage = `*New Class Added*\n\n*Subject:* ${data.subject}\n*Day:* ${day}\n*Time:* ${data.time}\n*Duration:* ${data.duration} mins\n*Status:* ${data.status}`;
         if (data.notes) {
             notificationMessage += `\n*Notes:* ${data.notes}`;
         }
@@ -195,29 +203,36 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
                   <FormMessage />
                 </FormItem>
             )} />
+            <FormField control={form.control} name="dayOfWeek" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Day of the Week</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue placeholder="Select a day" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {daysOfWeek.map((day, index) => (
+                          <SelectItem key={day} value={String(index)}>
+                              {day}
+                          </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+            )} />
             <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="dayOfWeek" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Day of the Week</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
-                      <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Select a day" /></SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {daysOfWeek.map((day, index) => (
-                            <SelectItem key={day} value={String(index)}>
-                                {day}
-                            </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-              )} />
               <FormField control={form.control} name="time" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Time</FormLabel>
                   <FormControl><Input type="time" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="duration" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Duration (mins)</FormLabel>
+                  <FormControl><Input type="number" placeholder="50" {...field} value={field.value || ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />

@@ -157,7 +157,7 @@ export function TimetableRow({
         <CardContent className="p-4 pt-0 space-y-2 text-sm">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <span>{entry.time}</span>
+            <span>{entry.time} ({entry.duration} mins)</span>
           </div>
 
           {entry.notes && (
@@ -200,6 +200,7 @@ export function TimetableRow({
 
       <TableCell>{entry.faculty}</TableCell>
       <TableCell>{entry.time}</TableCell>
+      <TableCell>{entry.duration} mins</TableCell>
 
       <TableCell>
         <Badge variant="outline" className={badgeHighlightClass()}>
