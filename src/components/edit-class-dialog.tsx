@@ -83,7 +83,18 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
 
   const onSubmit = async (values: z.infer<typeof classSchema>) => {
     try {
-      const data = { ...values };
+      const capitalizeFirstLetter = (str: string) => {
+        if (!str) return str;
+        const trimmed = str.trim();
+        return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+      };
+
+      const data = {
+        ...values,
+        subject: capitalizeFirstLetter(values.subject),
+        faculty: capitalizeFirstLetter(values.faculty),
+      };
+
       let notificationMessage = "";
       const day = daysOfWeek[data.dayOfWeek];
 
