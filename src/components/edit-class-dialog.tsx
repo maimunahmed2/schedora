@@ -130,7 +130,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
       await setDoc(doc(db, "metadata", "timetable"), { lastUpdated: serverTimestamp() });
 
       if (notificationMessage) {
-        notifyTelegram({ message: notificationMessage });
+        await notifyTelegram({ message: notificationMessage });
       }
 
       setIsOpen(false);
