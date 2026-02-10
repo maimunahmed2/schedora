@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -57,9 +57,15 @@ type TimetableProps = {
   data: TimetableEntry[];
   loading: boolean;
   isCR: boolean;
+  isTelegramPromptOpen?: boolean;
 };
 
-export function Timetable({ data, loading, isCR }: TimetableProps) {
+export function Timetable({
+  data,
+  loading,
+  isCR,
+  isTelegramPromptOpen,
+}: TimetableProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<TimetableEntry | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TimetableEntry | null>(null);
@@ -72,6 +78,13 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const today = format(new Date(), "EEE");
   const [selectedDay, setSelectedDay] = useState(today);
+
+  useEffect(() => {
+    if (isTelegramPromptOpen) {
+      setIsDialogOpen(false);
+      setDeleteTarget(null);
+    }
+  }, [isTelegramPromptOpen]);
 
   const handleAddNew = () => {
     setEditingClass(null);
@@ -178,7 +191,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
     <>
       <DropdownMenu open={isLoadMenuOpen} onOpenChange={setIsLoadMenuOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" disabled={isSeeding}>
+          <Button variant="outline" disabled={isSeeding} size="sm" className="w-40">
             {isSeeding ? <Loader2 className="animate-spin" /> : <BookCopy />}
             Load Schedule
           </Button>
@@ -205,7 +218,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Button onClick={handleAddNew}>
+      <Button onClick={handleAddNew} size="sm" className="w-32">
         <PlusCircle />
         Add Class
       </Button>
@@ -215,9 +228,9 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row justify-between items-center">
+      <CardHeader className="flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <CardTitle>Class Schedule</CardTitle>
-        {isCR && <div className="flex gap-2">{CrControls}</div>}
+        {isCR && <div className="flex gap-2 self-end sm:self-auto">{CrControls}</div>}
       </CardHeader>
 
       <CardContent>

@@ -90,7 +90,7 @@ export default function HomePage() {
       <Header lastUpdated={lastUpdated} />
       <main className="flex-1">
         <div className="container py-8">
-          <Timetable data={timetable} loading={loading} isCR={isCR} />
+          <Timetable data={timetable} loading={loading} isCR={isCR} isTelegramPromptOpen={isTelegramPromptOpen} />
         </div>
         {lastUpdated && (
              <p className="sm:hidden text-center text-sm text-muted-foreground pb-4">
