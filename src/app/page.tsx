@@ -124,7 +124,7 @@ export default function HomePage() {
             </Button>
             <AlertDialogCancel>Later</AlertDialogCancel>
             <AlertDialogAction asChild>
-                <a href="https.t.me/+eBQ58QRCwbxkYTA1" target="_blank" rel="noopener noreferrer" onClick={() => setIsTelegramPromptOpen(false)}>Join Channel</a>
+                <a href="https://t.me/+eBQ58QRCwbxkYTA1" target="_blank" rel="noopener noreferrer" onClick={() => setIsTelegramPromptOpen(false)}>Join Channel</a>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
