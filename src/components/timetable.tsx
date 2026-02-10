@@ -45,13 +45,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from "date-fns";
+import { format, getDay, getHours, getMinutes } from "date-fns";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn, getEndTime } from "@/lib/utils";
 
 type TimetableProps = {
   data: TimetableEntry[];
@@ -75,8 +76,18 @@ export function Timetable({
 
   const { toast } = useToast();
 
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    // Update the current time every minute to keep the 'grayed out' state fresh
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 60000); // every minute
+    return () => clearInterval(timer);
+  }, []);
+
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const today = format(new Date(), "EEE");
+  const today = format(now, "EEE");
   const [selectedDay, setSelectedDay] = useState(today);
 
   useEffect(() => {
@@ -182,6 +193,34 @@ export function Timetable({
     }
   };
 
+  const currentDayIndex = getDay(now);
+  const currentTimeInMinutes = getHours(now) * 60 + getMinutes(now);
+
+  const isDayCompleted = (dayIndex: number) => {
+    if (dayIndex < currentDayIndex) {
+      return true;
+    }
+    if (dayIndex > currentDayIndex) {
+      return false;
+    }
+
+    // It's today, check if all classes are over
+    const todaysClasses = data.filter((e) => e.dayOfWeek === dayIndex);
+    if (todaysClasses.length === 0) {
+      return false; // No classes, so the day isn't 'over' in this context
+    }
+
+    const lastClassEndTime = todaysClasses.reduce((latestTime, entry) => {
+      const endTime = getEndTime(entry.time, entry.duration);
+      if (!endTime) return latestTime;
+      const [h, m] = endTime.split(":").map(Number);
+      const timeInMinutes = h * 60 + m;
+      return Math.max(latestTime, timeInMinutes);
+    }, 0);
+
+    return currentTimeInMinutes > lastClassEndTime;
+  };
+
   const filteredData = data.filter(
     (e) => daysOfWeek[e.dayOfWeek] === selectedDay
   );
@@ -236,11 +275,20 @@ export function Timetable({
       <CardContent>
         <Tabs value={selectedDay} onValueChange={setSelectedDay}>
           <TabsList className="grid grid-cols-7 mb-4">
-            {daysOfWeek.map((day) => (
-              <TabsTrigger key={day} value={day}>
+            {daysOfWeek.map((day, index) => {
+               const isCompleted = isDayCompleted(index);
+              return (
+              <TabsTrigger 
+                key={day} 
+                value={day}
+                className={cn(
+                    isCompleted &&
+                      "text-muted-foreground/60 data-[state=active]:bg-muted/50 data-[state=active]:text-muted-foreground"
+                  )}
+                >
                 {day}
               </TabsTrigger>
-            ))}
+            )})}
           </TabsList>
         </Tabs>
 
