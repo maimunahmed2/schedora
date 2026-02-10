@@ -11,22 +11,24 @@ export async function sendTelegramMessage(message: string): Promise<void> {
   }
   
   if (!appUrl) {
-    console.warn("NEXT_PUBLIC_APP_URL is not set. The 'See full timetable' link will not be included in Telegram notifications.");
+    console.warn("NEXT_PUBLIC_APP_URL is not set. The 'See full timetable' button will not be included in Telegram notifications.");
   }
 
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
-  let text = message;
-  if (appUrl) {
-    text += `\n\n[See full timetable](${appUrl})`;
-  }
-
   const body: any = {
     chat_id: channelId,
-    text: text,
+    text: message,
     parse_mode: 'Markdown',
-    disable_web_page_preview: true,
   };
+
+  if (appUrl) {
+    body.reply_markup = {
+      inline_keyboard: [
+        [{ text: "See full timetable", url: appUrl }]
+      ]
+    };
+  }
 
   try {
     const response = await fetch(url, {
