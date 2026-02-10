@@ -9,7 +9,7 @@ import { Header } from "@/components/header";
 import { Timetable } from "@/components/timetable";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { BellRing, MessageSquare } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +26,7 @@ export default function HomePage() {
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [isNotificationAlertOpen, setIsNotificationAlertOpen] = useState(false);
+  const [isTelegramPromptOpen, setIsTelegramPromptOpen] = useState(false);
 
   useEffect(() => {
     // Listen for timetable updates
@@ -60,13 +60,30 @@ export default function HomePage() {
       }
     });
 
+    // Show Telegram prompt on startup if not dismissed
+    let timer: NodeJS.Timeout;
+    const hidePrompt = localStorage.getItem('hideTelegramPrompt');
+    if (hidePrompt !== 'true') {
+      timer = setTimeout(() => {
+        setIsTelegramPromptOpen(true);
+      }, 1000); // 1-second delay
+    }
+
     return () => {
       unsubscribeTimetable();
       unsubscribeMetadata();
+      if (timer) {
+        clearTimeout(timer);
+      }
     };
   }, []);
   
   const isCR = !!user;
+
+  const handleDontShowAgain = () => {
+    localStorage.setItem('hideTelegramPrompt', 'true');
+    setIsTelegramPromptOpen(false);
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -84,10 +101,6 @@ export default function HomePage() {
       <footer className="flex flex-col items-center gap-4 p-4 text-sm text-muted-foreground">
         <span>Made with ❤️ by <b>Maimun</b></span>
         <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setIsNotificationAlertOpen(true)}>
-                <BellRing className="mr-2 h-4 w-4" />
-                Get Timetable Updates
-            </Button>
             <Button asChild variant="outline">
               <a href="https://wa.me/919957510814?text=I%20have%20a%20query%20about%20the%20timetable." target="_blank" rel="noopener noreferrer">
                 <MessageSquare className="mr-2 h-4 w-4" />
@@ -97,18 +110,21 @@ export default function HomePage() {
         </div>
       </footer>
 
-      <AlertDialog open={isNotificationAlertOpen} onOpenChange={setIsNotificationAlertOpen}>
+      <AlertDialog open={isTelegramPromptOpen} onOpenChange={setIsTelegramPromptOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Join our Telegram Channel!</AlertDialogTitle>
+            <AlertDialogTitle>Stay Updated!</AlertDialogTitle>
             <AlertDialogDescription>
-              Get instant notifications whenever the timetable is updated. Join our channel to stay in the loop.
+              Want to get notification updates when changes are made here? Join our telegram channel.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button variant="ghost" onClick={handleDontShowAgain}>
+                Don't show again
+            </Button>
+            <AlertDialogCancel>Later</AlertDialogCancel>
             <AlertDialogAction asChild>
-                <a href="https://t.me/yourchannel" target="_blank" rel="noopener noreferrer">Join Channel</a>
+                <a href="https.t.me/+eBQ58QRCwbxkYTA1" target="_blank" rel="noopener noreferrer" onClick={() => setIsTelegramPromptOpen(false)}>Join Channel</a>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

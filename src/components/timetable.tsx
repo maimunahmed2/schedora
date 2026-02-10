@@ -136,7 +136,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Class Schedule</h1>
           {isCR && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center flex-row gap-2">
               <Button
                 onClick={() => setTemplateAlertOpen(true)}
                 disabled={isSeeding}
