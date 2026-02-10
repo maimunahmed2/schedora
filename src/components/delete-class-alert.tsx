@@ -19,6 +19,7 @@ import { type TimetableEntry } from "@/lib/types";
 import { notifyTelegram } from "@/ai/flows/notify-telegram-flow";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { getEndTime } from "@/lib/utils";
 
 type DeleteClassAlertProps = {
   isOpen: boolean;
@@ -39,8 +40,9 @@ export function DeleteClassAlert({ isOpen, setIsOpen, entry }: DeleteClassAlertP
       
       const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
       const day = daysOfWeek[entry.dayOfWeek];
-      const durationText = entry.duration === 1 ? 'hour' : 'hours';
-      const notificationMessage = `*Class Removed*\n\nThe subject *${entry.subject}* on *${day}* at *${entry.time}* for *${entry.duration} ${durationText}* has been removed from the timetable.`;
+      const endTime = getEndTime(entry.time, entry.duration);
+      const timeDisplay = endTime ? `${entry.time} - ${endTime}` : entry.time;
+      const notificationMessage = `*Class Removed*\n\nThe subject *${entry.subject}* on *${day}* at *${timeDisplay}* has been removed from the timetable.`;
       
       if (sendNotification) {
         await notifyTelegram({ message: notificationMessage });

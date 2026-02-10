@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { notifyTelegram } from "@/ai/flows/notify-telegram-flow";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "./ui/scroll-area";
+import { getEndTime } from "@/lib/utils";
 
 type EditClassDialogProps = {
   isOpen: boolean;
@@ -132,14 +133,15 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
         if (entry.dayOfWeek !== data.dayOfWeek) {
           changes.push(`*Day:* ${oldDay} -> *${day}*`);
         }
-        if (entry.time !== data.time) {
-          changes.push(`*Time:* ${entry.time} -> *${data.time}*`);
+
+        const oldEndTime = getEndTime(entry.time, entry.duration);
+        const oldTimeSlot = oldEndTime ? `${entry.time} - ${oldEndTime}` : entry.time;
+        const newEndTime = getEndTime(data.time, data.duration);
+        const newTimeSlot = newEndTime ? `${data.time} - ${newEndTime}` : data.time;
+        if (oldTimeSlot !== newTimeSlot) {
+          changes.push(`*Time Slot:* ${oldTimeSlot} -> *${newTimeSlot}*`);
         }
-        if (entry.duration !== data.duration) {
-          const oldDurationText = entry.duration === 1 ? 'hour' : 'hours';
-          const newDurationText = data.duration === 1 ? 'hour' : 'hours';
-          changes.push(`*Duration:* ${entry.duration} ${oldDurationText} -> *${data.duration} ${newDurationText}*`);
-        }
+        
         if (entry.status !== data.status) {
           changes.push(`*Status:* ${entry.status} -> *${data.status}*`);
         }
@@ -159,8 +161,9 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
         await addDoc(collection(db, "timetable"), { ...data, createdAt: serverTimestamp() });
         toast({ title: "Class Added", description: "The new class has been added to the timetable." });
         
-        const durationText = data.duration === 1 ? 'hour' : 'hours';
-        notificationMessage = `*New Class Added*\n\n*Subject:* ${data.subject}\n*Day:* ${day}\n*Time:* ${data.time}\n*Duration:* ${data.duration} ${durationText}\n*Status:* ${data.status}`;
+        const endTime = getEndTime(data.time, data.duration);
+        const timeDisplay = endTime ? `${data.time} - ${endTime}` : data.time;
+        notificationMessage = `*New Class Added*\n\n*Subject:* ${data.subject}\n*Day:* ${day}\n*Time Slot:* ${timeDisplay}\n*Status:* ${data.status}`;
         if (data.notes) {
             notificationMessage += `\n*Notes:* ${data.notes}`;
         }

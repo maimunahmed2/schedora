@@ -29,7 +29,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn, getEndTime } from "@/lib/utils";
 
 type TimetableRowProps = {
   entry: TimetableEntry;
@@ -53,7 +53,8 @@ export function TimetableRow({
   isMobile = false,
 }: TimetableRowProps) {
   const StatusIcon = statusConfig[entry.status].icon;
-  const durationText = entry.duration === 1 ? 'hour' : 'hours';
+  const endTime = getEndTime(entry.time, entry.duration);
+  const timeDisplay = endTime ? `${entry.time} - ${endTime}` : entry.time;
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -68,7 +69,7 @@ export function TimetableRow({
       "Saturday",
     ];
     const day = daysOfWeek[entry.dayOfWeek];
-    const message = `I'd like to report potential misinformation for the following class:\n\n*Subject:* ${entry.subject}\n*Faculty:* ${entry.faculty}\n*Day:* ${day}\n*Time:* ${entry.time}\n\nPlease specify the issue:`;
+    const message = `I'd like to report potential misinformation for the following class:\n\n*Subject:* ${entry.subject}\n*Faculty:* ${entry.faculty}\n*Day:* ${day}\n*Time:* ${timeDisplay}\n\nPlease specify the issue:`;
     const encodedMessage = encodeURIComponent(message);
     window.open(
       `https://wa.me/919957510814?text=${encodedMessage}`,
@@ -158,7 +159,7 @@ export function TimetableRow({
         <CardContent className="p-4 pt-0 space-y-2 text-sm">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <span>{entry.time} ({entry.duration} {durationText})</span>
+            <span>{timeDisplay}</span>
           </div>
 
           {entry.notes && (
@@ -200,8 +201,7 @@ export function TimetableRow({
       </TableCell>
 
       <TableCell>{entry.faculty}</TableCell>
-      <TableCell>{entry.time}</TableCell>
-      <TableCell>{entry.duration} {durationText}</TableCell>
+      <TableCell>{timeDisplay}</TableCell>
 
       <TableCell>
         <Badge variant="outline" className={badgeHighlightClass()}>

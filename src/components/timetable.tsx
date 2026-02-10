@@ -280,7 +280,6 @@ export function Timetable({
                   <TableHead>Subject</TableHead>
                   <TableHead>Faculty</TableHead>
                   <TableHead>Time</TableHead>
-                  <TableHead>Duration</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -289,14 +288,14 @@ export function Timetable({
                 {loading &&
                   [...Array(5)].map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell colSpan={6}>
+                      <TableCell colSpan={5}>
                         <Skeleton className="h-8 w-full" />
                       </TableCell>
                     </TableRow>
                   ))}
                 {!loading && filteredData.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={6} className="h-48 text-center">
+                        <TableCell colSpan={5} className="h-48 text-center">
                             <div className="flex flex-col items-center justify-center gap-2">
                                 <BookOpen className="h-12 w-12 text-muted-foreground" />
                                 <h3 className="text-lg font-semibold">No Classes Today</h3>
