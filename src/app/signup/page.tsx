@@ -13,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Link from "next/link";
-import { ArrowLeft, BookCopy } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { AppLogo } from "@/components/app-logo";
 
 const signupSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -72,7 +73,7 @@ export default function SignupPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
             <div className="flex justify-center items-center mb-4">
-                <BookCopy className="h-8 w-8 text-primary" />
+                <AppLogo className="h-8 w-8" />
             </div>
           <CardTitle className="text-2xl font-bold">Create CR Account</CardTitle>
           <CardDescription>Enter your details to create an account.</CardDescription>
