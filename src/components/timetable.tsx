@@ -31,6 +31,7 @@ import {
   setDoc,
   query,
   getDocs,
+  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -46,6 +47,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type TimetableProps = {
   data: TimetableEntry[];
@@ -58,7 +65,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
   const [editingClass, setEditingClass] = useState<TimetableEntry | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<TimetableEntry | null>(null);
   const [isSeeding, setIsSeeding] = useState(false);
-  const [isTemplateAlertOpen, setTemplateAlertOpen] = useState(false);
+  const [isTemplateAlertOpen, setTemplateAlertOpen] = useState<false | 'day' | 'week'>(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -80,7 +87,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
     setDeleteTarget(entry);
   };
 
-  const handleLoadTemplate = async () => {
+  const handleLoadWeekTemplate = async () => {
     setIsSeeding(true);
     try {
       const batch = writeBatch(db);
@@ -127,8 +134,101 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
       setTemplateAlertOpen(false);
     }
   };
+
+  const handleLoadDayTemplate = async () => {
+    setIsSeeding(true);
+    try {
+      const batch = writeBatch(db);
+      const timetableRef = collection(db, "timetable");
+      const dayIndex = daysOfWeek.indexOf(selectedDay);
+
+      if (dayIndex === -1) {
+        throw new Error("Invalid day selected.");
+      }
+
+      // Delete existing entries for the selected day
+      const q = query(timetableRef, where("dayOfWeek", "==", dayIndex));
+      const snapshot = await getDocs(q);
+      snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+
+      // Add template entries for the selected day
+      const dayTemplate = scheduleTemplate.filter(
+        (entry) => entry.dayOfWeek === dayIndex
+      );
+
+      dayTemplate.forEach((templateEntry) => {
+        const newDocRef = doc(collection(db, "timetable"));
+        const data = {
+          subject: templateEntry.subject,
+          faculty: templateEntry.faculty,
+          time: templateEntry.time,
+          status: templateEntry.status,
+          dayOfWeek: templateEntry.dayOfWeek,
+          createdAt: serverTimestamp(),
+          notes: templateEntry.notes || "",
+        };
+        batch.set(newDocRef, data);
+      });
+      
+      await batch.commit();
+      await setDoc(doc(db, "metadata", "timetable"), {
+        lastUpdated: serverTimestamp(),
+      });
+
+      toast({
+        title: "Day Schedule Loaded",
+        description: `The schedule for ${selectedDay} has been loaded.`,
+      });
+    } catch (error: any) {
+      console.error("Error loading day schedule:", error);
+      toast({
+        variant: "destructive",
+        title: "Error Loading Schedule",
+        description:
+          error.message || "Could not load the schedule. Please try again.",
+      });
+    } finally {
+      setIsSeeding(false);
+      setTemplateAlertOpen(false);
+    }
+  };
   
   const filteredData = data.filter(entry => daysOfWeek[entry.dayOfWeek] === selectedDay);
+
+  const CrControls = (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            disabled={isSeeding}
+            variant="outline"
+            size={isMobile ? "sm" : "default"}
+          >
+            {isSeeding ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <BookCopy />
+            )}
+            {isSeeding ? "Loading..." : "Load Schedule"}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => setTemplateAlertOpen('day')}>
+            Load for {selectedDay}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setTemplateAlertOpen('week')}>
+            Load for Week
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Button onClick={handleAddNew} size={isMobile ? "sm" : "default"}>
+        <PlusCircle />
+        {isMobile ? "Add" : "Add Class"}
+      </Button>
+    </>
+  );
 
   if (isMobile) {
     return (
@@ -136,25 +236,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Class Schedule</h1>
           {isCR && (
-            <div className="flex items-center flex-row gap-2">
-              <Button
-                onClick={() => setTemplateAlertOpen(true)}
-                disabled={isSeeding}
-                variant="outline"
-                size="sm"
-              >
-                {isSeeding ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <BookCopy className="mr-2 h-4 w-4" />
-                )}
-                {isSeeding ? "Loading..." : "Load Week"}
-              </Button>
-              <Button onClick={handleAddNew} size="sm">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add
-              </Button>
-            </div>
+            <div className="flex items-center flex-row gap-2">{CrControls}</div>
           )}
         </div>
 
@@ -187,7 +269,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
             <p className="mt-4">No classes scheduled yet.</p>
             {isCR && (
               <p className="mt-2 text-sm">
-                Click "Load Week" to get started.
+                Click "Load Schedule" to get started.
               </p>
             )}
           </div>
@@ -222,28 +304,32 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
         )}
         {isCR && (
           <AlertDialog
-            open={isTemplateAlertOpen}
-            onOpenChange={setTemplateAlertOpen}
+            open={!!isTemplateAlertOpen}
+            onOpenChange={(open) => !open && setTemplateAlertOpen(false)}
           >
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Load Week Schedule?</AlertDialogTitle>
+                 <AlertDialogTitle>
+                  {isTemplateAlertOpen === 'week'
+                    ? 'Load Week Schedule?'
+                    : `Load Schedule for ${selectedDay}?`}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will replace all classes with the
-                  pre-defined schedule template. This action cannot be undone.
+                  {isTemplateAlertOpen === 'week'
+                    ? 'This will replace all classes for the entire week with the pre-defined schedule template.'
+                    : `This will replace all classes for ${selectedDay} with the pre-defined schedule template.`}{' '}
+                  This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={isSeeding}>Cancel</AlertDialogCancel>
                 <Button
-                  onClick={handleLoadTemplate}
+                  onClick={isTemplateAlertOpen === 'week' ? handleLoadWeekTemplate : handleLoadDayTemplate}
                   variant="destructive"
                   disabled={isSeeding}
                 >
-                  {isSeeding && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {isSeeding ? "Loading..." : "Load Schedule"}
+                  {isSeeding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isSeeding ? "Loading..." : "Confirm & Load"}
                 </Button>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -259,22 +345,7 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
         <CardTitle>Class Schedule</CardTitle>
         {isCR && (
           <div className="flex items-center gap-2">
-            <Button
-              onClick={() => setTemplateAlertOpen(true)}
-              disabled={isSeeding}
-              variant="outline"
-            >
-              {isSeeding ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <BookCopy className="mr-2 h-4 w-4" />
-              )}
-              {isSeeding ? "Loading..." : "Load Week Schedule"}
-            </Button>
-            <Button onClick={handleAddNew}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Class
-            </Button>
+            {CrControls}
           </div>
         )}
       </CardHeader>
@@ -352,26 +423,32 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
       )}
       {isCR && (
         <AlertDialog
-          open={isTemplateAlertOpen}
-          onOpenChange={setTemplateAlertOpen}
+          open={!!isTemplateAlertOpen}
+          onOpenChange={(open) => !open && setTemplateAlertOpen(false)}
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Load Week Schedule?</AlertDialogTitle>
+              <AlertDialogTitle>
+                {isTemplateAlertOpen === 'week'
+                  ? 'Load Week Schedule?'
+                  : `Load Schedule for ${selectedDay}?`}
+              </AlertDialogTitle>
               <AlertDialogDescription>
-                This will replace all classes with the
-                pre-defined schedule template. This action cannot be undone.
+                {isTemplateAlertOpen === 'week'
+                  ? 'This will replace all classes for the entire week with the pre-defined schedule template.'
+                  : `This will replace all classes for ${selectedDay} with the pre-defined schedule template.`}{' '}
+                This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={isSeeding}>Cancel</AlertDialogCancel>
               <Button
-                onClick={handleLoadTemplate}
+                onClick={isTemplateAlertOpen === 'week' ? handleLoadWeekTemplate : handleLoadDayTemplate}
                 variant="destructive"
                 disabled={isSeeding}
               >
                 {isSeeding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSeeding ? "Loading..." : "Load Schedule"}
+                {isSeeding ? "Loading..." : "Confirm & Load"}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
