@@ -86,9 +86,35 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
         await updateDoc(docRef, data);
         toast({ title: "Class Updated", description: "The class details have been saved." });
         
-        if (entry.status !== data.status) {
-            notificationMessage = `*Class Update*\n\nThe status of *${data.subject}* on *${day}* at *${data.time}* has been changed to *${data.status}*.`;
+        const changes = [];
+        const oldDay = daysOfWeek[entry.dayOfWeek];
+
+        if (entry.subject !== data.subject) {
+          changes.push(`*Subject:* ${entry.subject} -> *${data.subject}*`);
         }
+        if (entry.faculty !== data.faculty) {
+          changes.push(`*Faculty:* ${entry.faculty} -> *${data.faculty}*`);
+        }
+        if (entry.dayOfWeek !== data.dayOfWeek) {
+          changes.push(`*Day:* ${oldDay} -> *${day}*`);
+        }
+        if (entry.time !== data.time) {
+          changes.push(`*Time:* ${entry.time} -> *${data.time}*`);
+        }
+        if (entry.status !== data.status) {
+          changes.push(`*Status:* ${entry.status} -> *${data.status}*`);
+        }
+        
+        const oldNotes = entry.notes || "";
+        const newNotes = data.notes || "";
+        if (oldNotes !== newNotes) {
+          changes.push(`*Notes:* ${oldNotes || "_none_"} -> *${newNotes || "_none_"}`);
+        }
+
+        if (changes.length > 0) {
+            notificationMessage = `*Class Details Updated*\n_For '${entry.subject}' on ${oldDay} at ${entry.time}_\n\n` + changes.join('\n');
+        }
+
       } else {
         // Add new entry
         await addDoc(collection(db, "timetable"), { ...data, createdAt: serverTimestamp() });
