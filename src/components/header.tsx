@@ -30,12 +30,10 @@ export function Header({ lastUpdated }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <AppLogo className="h-6 w-6" />
-          <Link href="/" className="text-lg font-bold tracking-tight">
-            Schedora
-          </Link>
-        </div>
+        <Link href="/" className="flex items-center gap-2">
+            <AppLogo className="h-8 w-8" />
+            <h1 className="text-xl font-bold">Schedora</h1>
+        </Link>
         <div className="flex items-center space-x-4">
           {lastUpdated && (
             <p className="text-sm text-muted-foreground hidden sm:block">
