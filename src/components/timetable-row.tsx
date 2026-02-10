@@ -108,7 +108,7 @@ export function TimetableRow({
   const Menu = (
     <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
           {isCR ? (
             <MoreHorizontal className="h-4 w-4" />
           ) : (
@@ -146,10 +146,10 @@ export function TimetableRow({
   if (isMobile) {
     return (
       <Card className={cn("overflow-hidden border", rowHighlightClass())}>
-        <CardHeader className="flex flex-row items-start justify-between p-4">
-          <div>
-            <CardTitle className="text-base">{entry.subject}</CardTitle>
-            <p className="text-sm text-muted-foreground">{entry.faculty}</p>
+        <CardHeader className="flex flex-row items-start justify-between gap-4 p-4">
+          <div className="overflow-hidden">
+            <CardTitle className="text-base truncate font-semibold">{entry.subject}</CardTitle>
+            <p className="text-sm text-muted-foreground truncate">{entry.faculty}</p>
           </div>
           {Menu}
         </CardHeader>
@@ -162,8 +162,8 @@ export function TimetableRow({
 
           {entry.notes && (
             <div className="flex items-start gap-2 pt-1">
-              <FileText className="h-4 w-4 mt-0.5 text-muted-foreground" />
-              <p>{entry.notes}</p>
+              <FileText className="h-4 w-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+              <p className="break-words">{entry.notes}</p>
             </div>
           )}
         </CardContent>
@@ -188,7 +188,7 @@ export function TimetableRow({
     <TableRow className={cn("transition-colors", rowHighlightClass())}>
       <TableCell className="font-medium">
         <div className="flex flex-col">
-          <span>{entry.subject}</span>
+          <span className="font-semibold">{entry.subject}</span>
           {entry.notes && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-1">
               <FileText className="h-3 w-3" />
