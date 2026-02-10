@@ -89,10 +89,19 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
         return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
       };
 
+      const capitalizeWords = (str: string) => {
+        if (!str) return str;
+        return str
+          .trim()
+          .split(/\s+/)
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(" ");
+      };
+
       const data = {
         ...values,
         subject: capitalizeFirstLetter(values.subject),
-        faculty: capitalizeFirstLetter(values.faculty),
+        faculty: capitalizeWords(values.faculty),
       };
 
       let notificationMessage = "";
@@ -163,111 +172,113 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
           <DialogTitle>{entry ? "Edit Class" : "Add New Class"}</DialogTitle>
           <DialogDescription>
             {entry ? "Update the details for this class." : "Fill in the details for the new class."}
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-            <FormField control={form.control} name="subject" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Subject</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-            )} />
-            <FormField control={form.control} name="faculty" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Faculty</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-            )} />
-            <div className="grid grid-cols-2 gap-4">
-               <FormField control={form.control} name="dayOfWeek" render={({ field }) => (
+        <div className="max-h-[70vh] overflow-y-auto p-1">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+              <FormField control={form.control} name="subject" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Day of the Week</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
-                      <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Select a day" /></SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {daysOfWeek.map((day, index) => (
-                            <SelectItem key={day} value={String(index)}>
-                                {day}
-                            </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Subject</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
               )} />
-              <FormField control={form.control} name="time" render={({ field }) => (
+              <FormField control={form.control} name="faculty" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Faculty</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+              )} />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={form.control} name="dayOfWeek" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Day of the Week</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select a day" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {daysOfWeek.map((day, index) => (
+                              <SelectItem key={day} value={String(index)}>
+                                  {day}
+                              </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="time" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Time</FormLabel>
+                    <FormControl><Input type="time" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <FormField control={form.control} name="status" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Time</FormLabel>
-                  <FormControl><Input type="time" {...field} /></FormControl>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Scheduled">Scheduled</SelectItem>
+                      <SelectItem value="Postponed">Postponed</SelectItem>
+                      <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )} />
-            </div>
-            <FormField control={form.control} name="status" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Scheduled">Scheduled</SelectItem>
-                    <SelectItem value="Postponed">Postponed</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="notes" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="e.g. Assignment due today" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-            )} />
-            
-            <FormField
-              control={form.control}
-              name="sendNotification"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <div className="space-y-0.5">
-                        <FormLabel>Send Telegram Notification</FormLabel>
-                        <FormDescription>
-                            Notify the channel about this change.
-                        </FormDescription>
-                    </div>
+              <FormField control={form.control} name="notes" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes (Optional)</FormLabel>
                     <FormControl>
-                        <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                        />
+                      <Textarea placeholder="e.g. Assignment due today" {...field} />
                     </FormControl>
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+              )} />
+              
+              <FormField
+                control={form.control}
+                name="sendNotification"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                      <div className="space-y-0.5">
+                          <FormLabel>Send Telegram Notification</FormLabel>
+                          <FormDescription>
+                              Notify the channel about this change.
+                          </FormDescription>
+                      </div>
+                      <FormControl>
+                          <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                          />
+                      </FormControl>
+                  </FormItem>
+                )}
+              />
 
-            <DialogFooter>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              <DialogFooter className="pt-4">
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   );
