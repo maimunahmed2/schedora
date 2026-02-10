@@ -152,8 +152,8 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
           <DialogTitle>{entry ? "Edit Class" : "Add New Class"}</DialogTitle>
           <DialogDescription>
             {entry ? "Update the details for this class." : "Fill in the details for the new class."}
