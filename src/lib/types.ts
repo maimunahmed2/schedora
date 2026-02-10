@@ -8,7 +8,7 @@ export type TimetableEntry = {
   faculty: string;
   dayOfWeek: number; // 0=Sun, 6=Sat
   time: string;
-  duration: number; // in minutes
+  duration: number; // in hours
   status: ClassStatus;
   createdAt: Timestamp;
   notes?: string;

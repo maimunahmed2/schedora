@@ -53,6 +53,7 @@ export function TimetableRow({
   isMobile = false,
 }: TimetableRowProps) {
   const StatusIcon = statusConfig[entry.status].icon;
+  const durationText = entry.duration === 1 ? 'hour' : 'hours';
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -157,7 +158,7 @@ export function TimetableRow({
         <CardContent className="p-4 pt-0 space-y-2 text-sm">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <span>{entry.time} ({entry.duration} mins)</span>
+            <span>{entry.time} ({entry.duration} {durationText})</span>
           </div>
 
           {entry.notes && (
@@ -200,7 +201,7 @@ export function TimetableRow({
 
       <TableCell>{entry.faculty}</TableCell>
       <TableCell>{entry.time}</TableCell>
-      <TableCell>{entry.duration} mins</TableCell>
+      <TableCell>{entry.duration} {durationText}</TableCell>
 
       <TableCell>
         <Badge variant="outline" className={badgeHighlightClass()}>

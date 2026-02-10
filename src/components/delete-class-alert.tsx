@@ -39,7 +39,8 @@ export function DeleteClassAlert({ isOpen, setIsOpen, entry }: DeleteClassAlertP
       
       const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
       const day = daysOfWeek[entry.dayOfWeek];
-      const notificationMessage = `*Class Removed*\n\nThe subject *${entry.subject}* on *${day}* at *${entry.time}* for *${entry.duration} mins* has been removed from the timetable.`;
+      const durationText = entry.duration === 1 ? 'hour' : 'hours';
+      const notificationMessage = `*Class Removed*\n\nThe subject *${entry.subject}* on *${day}* at *${entry.time}* for *${entry.duration} ${durationText}* has been removed from the timetable.`;
       
       if (sendNotification) {
         await notifyTelegram({ message: notificationMessage });
