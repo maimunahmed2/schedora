@@ -1,4 +1,4 @@
-# **App Name**: ClassPulse
+# **App Name**: Schedora
 
 ## Core Features:
 

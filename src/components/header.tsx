@@ -32,7 +32,7 @@ export function Header({ lastUpdated }: HeaderProps) {
         {/* <div className="flex items-center gap-2">
           <BookCopy className="h-6 w-6 text-primary" />
           <Link href="/" className="text-lg font-bold tracking-tight">
-            ClassPulse
+            Schedora
           </Link>
         </div> */}
         <div className="flex items-center space-x-4 w-full justify-end">

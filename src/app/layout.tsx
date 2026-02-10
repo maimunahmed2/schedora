@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ClassPulse',
+  title: 'Schedora',
   description: 'The single source of truth for your class timetable.',
 };
 
