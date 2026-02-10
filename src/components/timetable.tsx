@@ -22,7 +22,6 @@ import { TimetableRow } from "./timetable-row";
 import { EditClassDialog } from "./edit-class-dialog";
 import { DeleteClassAlert } from "./delete-class-alert";
 import { Skeleton } from "./ui/skeleton";
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
   writeBatch,
   doc,
@@ -69,7 +68,6 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
     useState<false | "day" | "week">(false);
 
   const { toast } = useToast();
-  const isMobile = useIsMobile();
 
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const today = format(new Date(), "EEE");
@@ -189,8 +187,8 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             onSelect={() => {
-              setIsLoadMenuOpen(false);     // ✅ CLOSE DROPDOWN
-              setTemplateAlertOpen("day"); // ✅ THEN OPEN DIALOG
+              setIsLoadMenuOpen(false);
+              setTemplateAlertOpen("day");
             }}
           >
             Load for {selectedDay}
@@ -198,8 +196,8 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
 
           <DropdownMenuItem
             onSelect={() => {
-              setIsLoadMenuOpen(false);      // ✅ CLOSE DROPDOWN
-              setTemplateAlertOpen("week");  // ✅ THEN OPEN DIALOG
+              setIsLoadMenuOpen(false);
+              setTemplateAlertOpen("week");
             }}
           >
             Load for Week
@@ -233,39 +231,82 @@ export function Timetable({ data, loading, isCR }: TimetableProps) {
           </TabsList>
         </Tabs>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Subject</TableHead>
-              <TableHead>Faculty</TableHead>
-              <TableHead>Time</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+        {/* Mobile View */}
+        <div className="space-y-4 md:hidden">
+          {loading &&
+            [...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-[230px] w-full rounded-lg" />
+            ))}
+          {!loading && filteredData.length === 0 && (
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
+              <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-4 text-lg font-semibold">No Classes Today</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Enjoy your day off!
+              </p>
+            </div>
+          )}
+          {!loading &&
+            filteredData.map((entry) => (
+              <TimetableRow
+                key={entry.id}
+                entry={entry}
+                isCR={isCR}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                isMobile={true}
+              />
+            ))}
+        </div>
 
-          <TableBody>
-            {loading &&
-              [...Array(5)].map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell colSpan={5}>
-                    <Skeleton className="h-8 w-full" />
-                  </TableCell>
+        {/* Desktop View */}
+        <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Subject</TableHead>
+                  <TableHead>Faculty</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-
-            {!loading &&
-              filteredData.map((entry) => (
-                <TimetableRow
-                  key={entry.id}
-                  entry={entry}
-                  isCR={isCR}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-          </TableBody>
-        </Table>
+              </TableHeader>
+              <TableBody>
+                {loading &&
+                  [...Array(5)].map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell colSpan={5}>
+                        <Skeleton className="h-8 w-full" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                {!loading && filteredData.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={5} className="h-48 text-center">
+                            <div className="flex flex-col items-center justify-center gap-2">
+                                <BookOpen className="h-12 w-12 text-muted-foreground" />
+                                <h3 className="text-lg font-semibold">No Classes Today</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Enjoy your day off!
+                                </p>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                )}
+                {!loading &&
+                  filteredData.map((entry) => (
+                    <TimetableRow
+                      key={entry.id}
+                      entry={entry}
+                      isCR={isCR}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      isMobile={false}
+                    />
+                  ))}
+              </TableBody>
+            </Table>
+        </div>
       </CardContent>
 
       {/* Dialogs mounted ONCE */}
