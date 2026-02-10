@@ -18,11 +18,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { notifyTelegram } from "@/ai/flows/notify-telegram-flow";
+import { Switch } from "@/components/ui/switch";
 
 type EditClassDialogProps = {
   isOpen: boolean;
@@ -39,6 +40,7 @@ const classSchema = z.object({
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   status: z.enum(["Scheduled", "Postponed", "Cancelled"]),
   notes: z.string().optional(),
+  sendNotification: z.boolean().default(true),
 });
 
 const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -48,6 +50,9 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
   
   const form = useForm<z.infer<typeof classSchema>>({
     resolver: zodResolver(classSchema),
+    defaultValues: {
+      sendNotification: true,
+    },
   });
 
   React.useEffect(() => {
@@ -60,6 +65,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
           time: entry.time,
           status: entry.status,
           notes: entry.notes || "",
+          sendNotification: true,
         });
       } else {
         form.reset({
@@ -69,6 +75,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
           time: "",
           status: "Scheduled",
           notes: "",
+          sendNotification: true,
         });
       }
     }
@@ -129,7 +136,7 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
       // Update the lastUpdated timestamp in a separate document
       await setDoc(doc(db, "metadata", "timetable"), { lastUpdated: serverTimestamp() });
 
-      if (notificationMessage) {
+      if (notificationMessage && values.sendNotification) {
         await notifyTelegram({ message: notificationMessage });
       }
 
@@ -220,6 +227,28 @@ export function EditClassDialog({ isOpen, setIsOpen, entry }: EditClassDialogPro
                   <FormMessage />
                 </FormItem>
             )} />
+            
+            <FormField
+              control={form.control}
+              name="sendNotification"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                        <FormLabel>Send Telegram Notification</FormLabel>
+                        <FormDescription>
+                            Notify the channel about this change.
+                        </FormDescription>
+                    </div>
+                    <FormControl>
+                        <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                        />
+                    </FormControl>
+                </FormItem>
+              )}
+            />
+
             <DialogFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

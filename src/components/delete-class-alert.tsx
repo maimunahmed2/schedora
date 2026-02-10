@@ -17,6 +17,8 @@ import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 import { type TimetableEntry } from "@/lib/types";
 import { notifyTelegram } from "@/ai/flows/notify-telegram-flow";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 type DeleteClassAlertProps = {
   isOpen: boolean;
@@ -27,6 +29,7 @@ type DeleteClassAlertProps = {
 export function DeleteClassAlert({ isOpen, setIsOpen, entry }: DeleteClassAlertProps) {
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [sendNotification, setSendNotification] = useState(true);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -37,7 +40,10 @@ export function DeleteClassAlert({ isOpen, setIsOpen, entry }: DeleteClassAlertP
       const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
       const day = daysOfWeek[entry.dayOfWeek];
       const notificationMessage = `*Class Removed*\n\nThe subject *${entry.subject}* on *${day}* at *${entry.time}* has been removed from the timetable.`;
-      await notifyTelegram({ message: notificationMessage });
+      
+      if (sendNotification) {
+        await notifyTelegram({ message: notificationMessage });
+      }
 
       toast({
         title: "Class Deleted",
@@ -64,6 +70,15 @@ export function DeleteClassAlert({ isOpen, setIsOpen, entry }: DeleteClassAlertP
             This action cannot be undone. This will permanently delete the class entry from the timetable.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+            <div className="space-y-0.5">
+                <Label htmlFor="send-notification-delete" className="font-normal">Send Telegram Notification</Label>
+                <p className="text-sm text-muted-foreground">
+                    Notify the channel about this removal.
+                </p>
+            </div>
+            <Switch id="send-notification-delete" checked={sendNotification} onCheckedChange={setSendNotification} />
+        </div>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <Button onClick={handleDelete} variant="destructive" disabled={isDeleting}>
