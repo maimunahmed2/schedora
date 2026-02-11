@@ -87,6 +87,7 @@ export function Timetable({
   }, []);
 
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const fullDaysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const today = format(now, "EEE");
   const [selectedDay, setSelectedDay] = useState(today);
 
@@ -264,11 +265,37 @@ export function Timetable({
     </>
   );
 
+  const selectedDayIndex = daysOfWeek.indexOf(selectedDay);
+  const isPastDay = selectedDayIndex < currentDayIndex;
+  const isToday = selectedDayIndex === currentDayIndex;
+
+  let cardTitleText = "Class Schedule";
+  let emptyStateTitle = "No Classes Scheduled";
+  let emptyStateDescription = "Enjoy the day!";
+  
+  if (!loading) {
+    if (isPastDay) {
+      const dayName = fullDaysOfWeek[selectedDayIndex];
+      cardTitleText = `Next ${dayName}'s Schedule`;
+      emptyStateTitle = `No Classes on Next ${dayName}`;
+      emptyStateDescription = `The schedule for next week's ${dayName} is clear.`;
+    } else if (isToday) {
+      cardTitleText = "Today's Schedule";
+      emptyStateTitle = "No Classes Today";
+      emptyStateDescription = "Enjoy your day off!";
+    } else {
+      const dayName = fullDaysOfWeek[selectedDayIndex];
+      cardTitleText = `${dayName}'s Schedule`;
+      emptyStateTitle = `No Classes on ${dayName}`;
+      emptyStateDescription = "The schedule for this day is clear.";
+    }
+  }
+
 
   return (
     <Card>
       <CardHeader className="flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <CardTitle>Class Schedule</CardTitle>
+        <CardTitle>{cardTitleText}</CardTitle>
         {isCR && <div className="flex gap-2 self-end sm:self-auto">{CrControls}</div>}
       </CardHeader>
 
@@ -301,9 +328,9 @@ export function Timetable({
           {!loading && filteredData.length === 0 && (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
               <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">No Classes Today</h3>
+              <h3 className="mt-4 text-lg font-semibold">{emptyStateTitle}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Enjoy your day off!
+                {emptyStateDescription}
               </p>
             </div>
           )}
@@ -346,9 +373,9 @@ export function Timetable({
                         <TableCell colSpan={5} className="h-48 text-center">
                             <div className="flex flex-col items-center justify-center gap-2">
                                 <BookOpen className="h-12 w-12 text-muted-foreground" />
-                                <h3 className="text-lg font-semibold">No Classes Today</h3>
+                                <h3 className="text-lg font-semibold">{emptyStateTitle}</h3>
                                 <p className="text-sm text-muted-foreground">
-                                    Enjoy your day off!
+                                    {emptyStateDescription}
                                 </p>
                             </div>
                         </TableCell>
