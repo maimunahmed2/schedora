@@ -37,7 +37,7 @@ export const scheduleTemplate: ScheduleTemplateEntry[] = [
 
   // Friday
   { dayOfWeek: 5, subject: "Electrical (EE11001)", faculty: "-", time: "09:00", duration: 1, status: "Scheduled" },
-  { dayOfWeek: 5, subject: "Chemistry (CY11002)", faculty: "Dr. Papri Sutra", time: "11:00", duration: 1, status: "Scheduled"},
-  { dayOfWeek: 5, subject: "Civil Core (CE11004)", faculty: "-", time: "14:00", duration: 1, status: "Scheduled" },
-  { dayOfWeek: 5, subject: "Engineering Mechanics (ME11001 T/A)", faculty: "Sushanta Kumar Sahoo", time: "14:00", duration: 1, status: "Scheduled" },
+  { dayOfWeek: 5, subject: "Chemistry (CY11002)", faculty: "Dr. Papri Sutra", time: "10:00", duration: 1, status: "Scheduled"},
+  { dayOfWeek: 5, subject: "Civil Core (CE11004)", faculty: "-", time: "11:00", duration: 1, status: "Scheduled" },
+  { dayOfWeek: 5, subject: "Engineering Mechanics (ME11001 T/A)", faculty: "Sushanta Kumar Sahoo", time: "13:00", duration: 1, status: "Scheduled" },
 ];
