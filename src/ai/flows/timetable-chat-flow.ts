@@ -43,19 +43,23 @@ const getTimetableData = ai.defineTool(
   async () => {
     try {
       const timetableRef = collection(db, 'timetable');
-      const q = query(timetableRef, orderBy('dayOfWeek', 'asc'), orderBy('time', 'asc'));
-      const snapshot = await getDocs(q);
+      // Fetching all data to avoid index requirements for complex queries in the tool
+      const snapshot = await getDocs(timetableRef);
       return snapshot.docs.map(doc => {
         const data = doc.data();
-        // Convert Firestore Timestamps to strings for the LLM
         return {
           id: doc.id,
-          ...data,
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt
+          subject: data.subject,
+          faculty: data.faculty,
+          dayOfWeek: data.dayOfWeek,
+          time: data.time,
+          duration: data.duration,
+          status: data.status,
+          notes: data.notes || '',
         };
       });
     } catch (error) {
-      console.error("Error in getTimetableData tool:", error);
+      // Return an empty array if there's an issue fetching data
       return [];
     }
   }
@@ -73,7 +77,8 @@ const timetableChatFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      const { output } = await ai.generate({
+      const response = await ai.generate({
+        model: 'googleai/gemini-1.5-flash',
         system: `You are Schedora Assistant, a helpful AI specialized in the student timetable.
         Current Context:
         - Today is ${input.context.currentDay}
@@ -95,10 +100,10 @@ const timetableChatFlow = ai.defineFlow(
         tools: [getTimetableData],
       });
 
-      return { response: output?.text || "I'm sorry, I couldn't find a response. Please try rephrasing your question." };
+      return { response: response.text || "I'm sorry, I couldn't find a response. Please try rephrasing your question." };
     } catch (error) {
-      console.error("Genkit generate error:", error);
-      return { response: "I'm having trouble connecting to my brain right now. Please try again in a moment." };
+      // Log error internally if needed, but return a user-friendly message
+      return { response: "I'm having trouble connecting to my brain right now. Please check if the API key is set and try again." };
     }
   }
 );
