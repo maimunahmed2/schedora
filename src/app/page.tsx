@@ -10,6 +10,7 @@ import { Timetable } from "@/components/timetable";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
+import { ChatBot } from "@/components/chat-bot";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -129,6 +130,8 @@ export default function HomePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ChatBot />
     </div>
   );
 }
