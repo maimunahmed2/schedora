@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Bot, User, AlertCircle } from "lucide-react";
 import { timetableChat } from "@/ai/flows/timetable-chat-flow";
 import { cn } from "@/lib/utils";
 import { format, getDay } from "date-fns";
 
 type Message = {
-  role: "user" | "model";
+  role: "user" | "model" | "error";
   content: string;
 };
 
@@ -24,9 +24,12 @@ export function ChatBot() {
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -44,17 +47,21 @@ export function ChatBot() {
         dayOfWeek: getDay(now),
       };
 
-      const { response } = await timetableChat({
+      const { response, error } = await timetableChat({
         message: userMessage,
-        history: messages,
+        history: messages.filter(m => m.role !== 'error') as any,
         context,
       });
 
-      setMessages((prev) => [...prev, { role: "model", content: response }]);
-    } catch (error) {
+      if (error) {
+        setMessages((prev) => [...prev, { role: "error", content: `Debug Info: ${error}` }]);
+      } else {
+        setMessages((prev) => [...prev, { role: "model", content: response }]);
+      }
+    } catch (error: any) {
       setMessages((prev) => [
         ...prev,
-        { role: "model", content: "Sorry, I encountered an error. Please try again later." },
+        { role: "error", content: `Failed to connect to assistant: ${error.message || 'Unknown error'}` },
       ]);
     } finally {
       setIsLoading(false);
@@ -76,7 +83,7 @@ export function ChatBot() {
               <X className="h-4 w-4" />
             </Button>
           </CardHeader>
-          <CardContent className="flex-1 p-0">
+          <CardContent className="flex-1 p-0 overflow-hidden">
             <ScrollArea className="h-full p-4" ref={scrollRef}>
               <div className="space-y-4">
                 {messages.length === 0 && (
@@ -94,13 +101,16 @@ export function ChatBot() {
                   >
                     <div className={cn(
                       "p-1 rounded-full h-8 w-8 flex items-center justify-center shrink-0",
-                      m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                      m.role === "user" ? "bg-primary text-primary-foreground" : 
+                      m.role === "error" ? "bg-destructive/10 text-destructive" : "bg-muted"
                     )}>
-                      {m.role === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                      {m.role === "user" ? <User className="h-4 w-4" /> : 
+                       m.role === "error" ? <AlertCircle className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                     </div>
                     <div className={cn(
-                      "rounded-lg p-3 max-w-[80%]",
-                      m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                      "rounded-lg p-3 max-w-[80%] whitespace-pre-wrap",
+                      m.role === "user" ? "bg-primary text-primary-foreground" : 
+                      m.role === "error" ? "bg-destructive/5 text-destructive border border-destructive/20 text-xs font-mono" : "bg-muted"
                     )}>
                       {m.content}
                     </div>
@@ -112,7 +122,7 @@ export function ChatBot() {
                       <Bot className="h-4 w-4" />
                     </div>
                     <div className="bg-muted rounded-lg p-3">
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                     </div>
                   </div>
                 )}

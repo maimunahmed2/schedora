@@ -9,8 +9,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import { db, isConfigured } from '@/lib/firebase';
 
 const TimetableChatInputSchema = z.object({
   message: z.string().describe('The user question about the timetable.'),
@@ -29,6 +29,7 @@ export type TimetableChatInput = z.infer<typeof TimetableChatInputSchema>;
 
 const TimetableChatOutputSchema = z.object({
   response: z.string().describe('The AI response to the user query.'),
+  error: z.string().optional().describe('Error message if something went wrong.'),
 });
 
 export type TimetableChatOutput = z.infer<typeof TimetableChatOutputSchema>;
@@ -41,9 +42,11 @@ const getTimetableData = ai.defineTool(
     outputSchema: z.array(z.any()),
   },
   async () => {
+    if (!isConfigured) {
+      throw new Error('Firebase is not configured. Please set up your .env.local file with Firebase keys.');
+    }
     try {
       const timetableRef = collection(db, 'timetable');
-      // Fetching all data to avoid index requirements for complex queries in the tool
       const snapshot = await getDocs(timetableRef);
       return snapshot.docs.map(doc => {
         const data = doc.data();
@@ -58,9 +61,8 @@ const getTimetableData = ai.defineTool(
           notes: data.notes || '',
         };
       });
-    } catch (error) {
-      // Return an empty array if there's an issue fetching data
-      return [];
+    } catch (error: any) {
+      throw new Error(`Failed to fetch timetable data: ${error.message}`);
     }
   }
 );
@@ -101,9 +103,12 @@ const timetableChatFlow = ai.defineFlow(
       });
 
       return { response: response.text || "I'm sorry, I couldn't find a response. Please try rephrasing your question." };
-    } catch (error) {
-      // Log error internally if needed, but return a user-friendly message
-      return { response: "I'm having trouble connecting to my brain right now. Please check if the API key is set and try again." };
+    } catch (error: any) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return { 
+        response: "I encountered an error while processing your request.",
+        error: errorMessage 
+      };
     }
   }
 );
