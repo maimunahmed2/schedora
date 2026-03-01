@@ -22,7 +22,8 @@ const TimetableChatInputSchema = z.object({
     currentTime: z.string(),
     currentDay: z.string(),
     dayOfWeek: z.number(),
-  }).describe('Context about the current time and day.')
+  }).describe('Context about the current time and day.'),
+  isApi: z.boolean().optional().describe('Whether the request is coming from the API.')
 });
 
 export type TimetableChatInput = z.infer<typeof TimetableChatInputSchema>;
@@ -97,7 +98,10 @@ const timetableChatFlow = ai.defineFlow(
         4. If no classes are left today, mention classes for tomorrow.
         5. Pay attention to "notes" in the timetable data for information about assignments or exams.
         6. If a class status is "Cancelled" or "Postponed", make sure to mention that clearly.
-        7. If you cannot find any data, politely inform the user that no schedule is currently set.`,
+        7. If you cannot find any data, politely inform the user that no schedule is currently set.
+        8. UNCERTAINTY HANDLING:
+           - If the user's question is unrelated to the timetable, faculty, classes, or notes, or if the answer cannot be determined with confidence:
+             ${input.isApi ? "You MUST respond with exactly the string 'ai_fail_silent' and nothing else." : "Politely inform the user that you can only assist with timetable-related queries."}`,
         prompt: input.message,
         messages: input.history?.map(h => ({
           role: h.role,
@@ -106,11 +110,11 @@ const timetableChatFlow = ai.defineFlow(
         tools: [getTimetableData],
       });
 
-      return { response: response.text || "I'm sorry, I couldn't find a response. Please try rephrasing your question." };
+      return { response: response.text || (input.isApi ? "ai_fail_silent" : "I'm sorry, I couldn't find a response. Please try rephrasing your question.") };
     } catch (error: any) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       return { 
-        response: "I encountered an error while processing your request.",
+        response: input.isApi ? "ai_fail_silent" : "I encountered an error while processing your request.",
         error: errorMessage 
       };
     }
