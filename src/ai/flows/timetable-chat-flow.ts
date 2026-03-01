@@ -86,14 +86,18 @@ const timetableChatFlow = ai.defineFlow(
         - Today is ${input.context.currentDay}
         - Current time is ${input.context.currentTime}
         
-        Use the 'getTimetableData' tool to see the current schedule.
-        When answering:
+        Language Rules:
+        1. If the user messages in Hindi or Hinglish, respond in Hinglish (Hindi written using English/Latin alphabets).
+        2. For ALL responses, regardless of the input language, ONLY use English/Latin alphabets. NEVER use Devanagari or any other non-Latin scripts.
+
+        Behavioral Rules:
         1. Be concise, professional, and friendly.
-        2. If asked about "next class", look at the current time and find the next scheduled class for today.
-        3. If no classes are left today, mention classes for tomorrow.
-        4. Pay attention to "notes" in the timetable data for information about assignments or exams.
-        5. If a class status is "Cancelled" or "Postponed", make sure to mention that clearly.
-        6. If you cannot find any data, politely inform the user that no schedule is currently set.`,
+        2. Use the 'getTimetableData' tool to see the current schedule.
+        3. If asked about "next class", look at the current time and find the next scheduled class for today.
+        4. If no classes are left today, mention classes for tomorrow.
+        5. Pay attention to "notes" in the timetable data for information about assignments or exams.
+        6. If a class status is "Cancelled" or "Postponed", make sure to mention that clearly.
+        7. If you cannot find any data, politely inform the user that no schedule is currently set.`,
         prompt: input.message,
         messages: input.history?.map(h => ({
           role: h.role,
