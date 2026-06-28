@@ -1,6 +1,6 @@
 # Schedora - Class Timetable Management
 
-A single source of truth for your class timetable, featuring a Telegram-integrated notification system and an AI Assistant.
+A smart class timetable tracker that helps CRs manage daily schedules, rescheduled classes, and routine updates from one simple dashboard.
 
 ## Features
 - **Real-time Timetable**: View your schedule for the day or week.
